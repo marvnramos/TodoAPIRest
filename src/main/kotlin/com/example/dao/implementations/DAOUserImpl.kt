@@ -9,29 +9,22 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import java.util.*
 
 class DAOUserImpl: DAOUser {
-    private fun Long.toDate(): Date {
-        return Date(this)
-    }
-
-    private fun Date.toLong(): Long {
-        return  this.time
-    }
 
     private fun resultRowToUser(row: ResultRow) = User(
         id = row[Users.id],
         username = row[Users.username],
         password = row[Users.password],
-        createdAt = row[Users.createdAt].toDate(),
-        updatedAt = row[Users.updatedAt].toDate()
+        createdAt = Date(row[Users.createdAt]),
+        updatedAt = Date(row[Users.updatedAt])
     )
 
     override suspend fun addUser(user: User): User? = dbQuery{
         val insertStatement = Users.insert {
-            it[Users.id] = user.id
+            it[Users.id] = user.id!!
             it[Users.username] = user.username
             it[Users.password] = user.password
-            it[Users.createdAt] = user.createdAt.toLong()
-            it[Users.updatedAt] = user.updatedAt.toLong()
+            it[Users.createdAt] = user.createdAt!!.time
+            it[Users.updatedAt] = user.updatedAt!!.time
         }
         insertStatement.resultedValues?.singleOrNull()?.let(::resultRowToUser)
     }
@@ -52,7 +45,7 @@ class DAOUserImpl: DAOUser {
                 it[Users.password] = password
             }
             user?.updatedAt?.let { updatedAt ->
-                it[Users.updatedAt] = updatedAt.toLong()
+                it[Users.updatedAt] = updatedAt.time
             }
         }
         updatedRows > 0
