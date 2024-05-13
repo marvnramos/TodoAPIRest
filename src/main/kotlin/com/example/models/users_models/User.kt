@@ -1,14 +1,21 @@
 package com.example.models.users_models
 
+import com.example.utils.DateSerializer
+import com.example.utils.UUIDSerializer
+import kotlinx.serialization.Serializable
 import java.util.*
 import org.jetbrains.exposed.sql.*
 
+@Serializable
 data class User(
-    val id: UUID,
+    @Serializable(with = UUIDSerializer::class)
+    val id: UUID? = UUID.randomUUID(),
     val username: String,
     val password: String,
-    val createdAt: Date,
-    val updatedAt: Date
+    @Serializable(with = DateSerializer::class)
+    var createdAt: Date? = Date(),
+    @Serializable(with = DateSerializer::class)
+    var updatedAt: Date? = Date()
 )
 
 object Users: Table(){
