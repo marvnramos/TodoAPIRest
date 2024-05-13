@@ -3,6 +3,7 @@ package com.example.dao.interfaces
 import com.example.models.users_models.User
 import java.util.UUID
 
+
 interface DAOUser {
     suspend fun addUser(user: User): User?
     suspend fun getUser(id: UUID): User?
