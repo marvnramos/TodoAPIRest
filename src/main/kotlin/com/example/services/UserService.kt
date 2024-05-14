@@ -1,4 +1,4 @@
-package com.example.dao.implementations
+package com.example.services
 
 import com.example.dao.DatabaseSingleton.dbQuery
 import com.example.dao.interfaces.DAOUser
@@ -8,7 +8,7 @@ import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import java.util.*
 
-class DAOUserImpl: DAOUser {
+class UserService: DAOUser {
 
     private fun resultRowToUser(row: ResultRow) = User(
         id = row[Users.id],

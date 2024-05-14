@@ -1,10 +1,10 @@
-package com.example.dao.implementations
+package com.example.services
 
 import com.example.dao.interfaces.DAOTask
 import com.example.models.task_models.Task
 import java.util.*
 
-class DAOTaskImpl:DAOTask {
+class TaskService:DAOTask {
     override suspend fun allTasks(): List<Task> {
         TODO("Not yet implemented")
     }
