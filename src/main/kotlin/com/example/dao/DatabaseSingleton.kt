@@ -1,8 +1,8 @@
 package com.example.dao
 
-import com.example.models.task_models.Tasks
-import com.example.models.users_models.User
-import com.example.models.users_models.Users
+import com.example.entities.Tasks
+//import com.example.models.users_models.Users
+import com.example.entities.Users
 import kotlinx.coroutines.*
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.*
