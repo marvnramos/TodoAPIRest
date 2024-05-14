@@ -8,7 +8,7 @@ import com.example.models.users_models.User
 import io.ktor.http.*
 import io.ktor.server.request.*
 
-fun Application.configureRouting() {
+fun Application.configureUserRoutes() {
     val userImpl = UserService()
     routing {
         post("/") {
