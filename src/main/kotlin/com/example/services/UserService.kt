@@ -3,7 +3,7 @@ package com.example.services
 import com.example.dao.DatabaseSingleton.dbQuery
 import com.example.dao.interfaces.DAOUser
 import com.example.models.users_models.User
-import com.example.models.users_models.Users
+import com.example.entities.Users
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import java.util.*
