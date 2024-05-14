@@ -4,7 +4,7 @@ import com.example.models.task_models.enums.Status
 import org.jetbrains.exposed.sql.Table
 
 object Tasks : Table() {
-    private  val id = uuid("id")
+    val id = uuid("id")
     val title = varchar("title", 25)
     val description = varchar("description", 255)
     val status = enumeration<Status>("status")
