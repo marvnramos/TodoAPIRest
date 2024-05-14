@@ -20,11 +20,11 @@ class UserService: DAOUser {
 
     override suspend fun addUser(user: User): User? = dbQuery{
         val insertStatement = Users.insert {
-            it[Users.id] = user.id!!
-            it[Users.username] = user.username
-            it[Users.password] = user.password
-            it[Users.createdAt] = user.createdAt!!.time
-            it[Users.updatedAt] = user.updatedAt!!.time
+            it[id] = user.id!!
+            it[username] = user.username
+            it[password] = user.password
+            it[createdAt] = user.createdAt!!.time
+            it[updatedAt] = user.updatedAt!!.time
         }
         insertStatement.resultedValues?.singleOrNull()?.let(::resultRowToUser)
     }
