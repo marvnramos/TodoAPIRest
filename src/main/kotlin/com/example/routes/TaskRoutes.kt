@@ -1,6 +1,7 @@
 package com.example.routes
 
 import com.example.models.task_models.Task
+import com.example.models.task_models.TaskPartial
 import com.example.services.TaskService
 import com.example.services.UserService
 import io.ktor.http.*
@@ -57,6 +58,54 @@ fun Application.configureTaskRoutes() {
             }
 
             call.respond(task!!)
+        }
+        delete("/v1/tasks/{id}"){
+            try {
+                if(call.parameters["id"].isNullOrEmpty()){
+                    call.respond(HttpStatusCode.BadRequest, "Task id is required")
+                }
+                val id = UUID.fromString(call.parameters["id"])
+                val task: Task? = taskImple.getTask(id)
+                if (task == null) {
+                    call.respond(HttpStatusCode.NotFound, "Task not found")
+                }
+
+                taskImple.deleteTask(id)
+
+                call.respond(task!!)
+            } catch (e: Exception) {
+                call.respond(HttpStatusCode.InternalServerError, "Internal Server Error")
+            }
+        }
+        patch ("/v1/tasks/{id}"){
+            try {
+                val id = call.parameters["id"]?.let { it1 -> UUID.fromString(it1) }
+                val requestBody: TaskPartial  = call.receive<TaskPartial>()
+
+                if (id == null) {
+                    call.respond(HttpStatusCode.BadRequest, "Task id is required")
+                    return@patch
+                }
+                call.respond(HttpStatusCode.OK, requestBody)
+
+//                val task: Boolean = taskImple.editTask(id, requestBody)
+//                call.respond(HttpStatusCode.OK, "Task successfully updated")
+
+
+//                val id = UUID.fromString(call.parameters["id"])
+//                val requestBody: Task = call.receive<Task>()
+//
+//                call.respond(requestBody)
+
+//                if(!task){
+//                    call.respond(HttpStatusCode.NotFound, "Task not found")
+//                }
+//
+//                call.respond(HttpStatusCode.OK, "Task updated")
+            }catch(ex:Exception){
+                println(ex.message)
+                call.respond(HttpStatusCode.InternalServerError, "${ex.message}")
+            }
         }
     }
 }
