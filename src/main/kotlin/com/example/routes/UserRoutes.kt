@@ -13,7 +13,7 @@ import java.util.UUID
 fun Application.configureUserRoutes() {
     val userImpl = UserService()
     routing {
-        post("/") {
+        post("/v1/users") {
             try {
                 val requestBody: User = call.receive<User>()
 
