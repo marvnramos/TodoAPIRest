@@ -9,4 +9,5 @@ interface DAOUser {
     suspend fun getUser(id: UUID): User?
     suspend fun editUser(id: UUID, user: User?): Boolean
     suspend fun  deleteUser(id: UUID): Boolean
+    suspend fun getUser(username: String): User?
 }
