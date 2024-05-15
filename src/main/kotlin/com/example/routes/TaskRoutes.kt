@@ -80,28 +80,19 @@ fun Application.configureTaskRoutes() {
         patch ("/v1/tasks/{id}"){
             try {
                 val id = call.parameters["id"]?.let { it1 -> UUID.fromString(it1) }
-                val requestBody: TaskPartial  = call.receive<TaskPartial>()
+                val requestBody: TaskPartial = call.receive<TaskPartial>()
 
                 if (id == null) {
                     call.respond(HttpStatusCode.BadRequest, "Task id is required")
                     return@patch
                 }
-                call.respond(HttpStatusCode.OK, requestBody)
+                val task: Boolean = taskImple.editTask(id, requestBody)
 
-//                val task: Boolean = taskImple.editTask(id, requestBody)
-//                call.respond(HttpStatusCode.OK, "Task successfully updated")
+                if(!task){
+                    call.respond(HttpStatusCode.NotModified, "Something failed. Task not modified")
+                }
 
-
-//                val id = UUID.fromString(call.parameters["id"])
-//                val requestBody: Task = call.receive<Task>()
-//
-//                call.respond(requestBody)
-
-//                if(!task){
-//                    call.respond(HttpStatusCode.NotFound, "Task not found")
-//                }
-//
-//                call.respond(HttpStatusCode.OK, "Task updated")
+                call.respond(HttpStatusCode.OK, "Task successfully updated")
             }catch(ex:Exception){
                 println(ex.message)
                 call.respond(HttpStatusCode.InternalServerError, "${ex.message}")
