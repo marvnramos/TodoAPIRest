@@ -26,5 +26,24 @@ fun Application.configureUserRoutes() {
                 call.respond(HttpStatusCode.InternalServerError, "Error processing request")
             }
         }
+        get("/v1/users/{id}"){
+            try {
+                if(call.parameters["id"] == null){
+                    call.respond(HttpStatusCode.BadRequest, "User id is required!")
+                }
+
+                val id: UUID? = call.parameters["id"]?.let { it1 -> UUID.fromString(it1) }
+                val user: User? = userImpl.getUser(id!!)
+
+                if (user == null) {
+                    call.respond(HttpStatusCode.NotFound, "User not found")
+                }
+
+                call.respond(user!!)
+            }catch (e: Exception){
+                call.respond(HttpStatusCode.InternalServerError, "Error: ${e.message}")
+            }
+        }
+
     }
 }
