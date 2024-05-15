@@ -10,7 +10,7 @@ data class User(
     @Serializable(with = UUIDSerializer::class)
     val id: UUID? = UUID.randomUUID(),
     val username: String,
-    val password: String,
+    var password: String,
     @Serializable(with = DateSerializer::class)
     var createdAt: Date? = Date(),
     @Serializable(with = DateSerializer::class)
