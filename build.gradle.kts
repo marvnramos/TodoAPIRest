@@ -24,6 +24,7 @@ repositories {
 }
 
 dependencies {
+    implementation("org.mindrot:jbcrypt:0.4")
     implementation("io.ktor:ktor-server-core-jvm")
     implementation("io.ktor:ktor-server-content-negotiation-jvm")
     implementation("io.ktor:ktor-serialization-kotlinx-json-jvm")
