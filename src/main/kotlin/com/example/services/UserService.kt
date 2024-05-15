@@ -29,6 +29,13 @@ class UserService: DAOUser {
         insertStatement.resultedValues?.singleOrNull()?.let(::resultRowToUser)
     }
 
+    override suspend fun getUser(username: String): User? = dbQuery {
+        Users
+            .select(Users.username eq username)
+            .map(::resultRowToUser)
+            .singleOrNull()
+    }
+
     override suspend fun getUser(id: UUID): User? = dbQuery{
         Users
             .select{ Users.id eq id }
