@@ -1,6 +1,5 @@
 package com.example.routes
 
-import com.example.libs.jwt.JWTPrincipal
 import com.example.models.task_models.Task
 import com.example.models.task_models.TaskPartial
 import com.example.services.TaskService
