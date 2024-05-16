@@ -15,7 +15,7 @@ fun Application.configureSecurity(args: Array<String>) {
     val appConfig = env.config
 
     val jwtAudience = appConfig.property("ktor.deployment.jwtAudience").getString()
-    val jwtDomain = appConfig.property("ktor.deployment.jwtDomain").getString() // You don't have this property in your yaml file
+    val jwtDomain = appConfig.property("ktor.deployment.jwtDomain").getString()
     val jwtRealm = appConfig.property("ktor.deployment.jwtRealm").getString()
     val jwtSecret = appConfig.property("ktor.deployment.jwtSecret").getString()
 
