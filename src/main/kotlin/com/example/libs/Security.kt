@@ -7,7 +7,6 @@ import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
 import io.ktor.server.engine.*
 
-//import io.ktor.server.config.*
 fun Application.configureSecurity(args: Array<String>) {
     // Please read the jwt property from the config file if you are using EngineMain
 
