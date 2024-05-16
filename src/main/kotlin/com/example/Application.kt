@@ -27,6 +27,6 @@ fun Application.module(args: Array<String>) {
     configureSerialization()
     configureDatabase.init()
     configureHTTP()
-    configureRouting()
     configureSecurity(args)
+    configureRouting(args)
 }
