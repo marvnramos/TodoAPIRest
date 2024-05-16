@@ -22,8 +22,10 @@ fun main(args: Array<String>) {
 }
 
 fun Application.module(args: Array<String>) {
+    val configureDatabase = DatabaseSingleton(args)
+
     configureSerialization()
-    DatabaseSingleton.init()
+    configureDatabase.init()
     configureHTTP()
     configureRouting()
     configureSecurity(args)
