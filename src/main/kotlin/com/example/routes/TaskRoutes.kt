@@ -1,11 +1,13 @@
 package com.example.routes
 
+import com.example.libs.jwt.JWTPrincipal
 import com.example.models.task_models.Task
 import com.example.models.task_models.TaskPartial
 import com.example.services.TaskService
 import com.example.services.UserService
 import io.ktor.http.*
 import io.ktor.server.application.*
+import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -45,20 +47,31 @@ fun Application.configureTaskRoutes() {
                 call.respond(HttpStatusCode.InternalServerError, "Internal Server Error")
             }
         }
-        get("/v1/tasks/{id}"){
-            if(call.parameters["id"] == null){
-                call.respond(HttpStatusCode.BadRequest, "Task id is required")
+
+        authenticate("auth-jwt") {
+            get("/v1/tasks/{id}") {
+                try {
+                    val id = call.parameters["id"]?.let { UUID.fromString(it) }
+
+                    if (id == null) {
+                        call.respond(HttpStatusCode.BadRequest, "Task id is required")
+                        return@get
+                    }
+
+                    val task: Task? = taskImple.getTask(id)
+
+                    if (task == null) {
+                        call.respond(HttpStatusCode.NotFound, "Task not found")
+                    } else {
+                        call.respond(task)
+                    }
+                } catch (e: Exception) {
+                    call.respond(HttpStatusCode.InternalServerError, "Internal Server Error")
+                }
             }
-
-            val id = UUID.fromString(call.parameters["id"])
-            val task: Task? = taskImple.getTask(id)
-
-            if (task == null) {
-                call.respond(HttpStatusCode.NotFound, "Task not found")
-            }
-
-            call.respond(task!!)
         }
+
+
         delete("/v1/tasks/{id}"){
             try {
                 if(call.parameters["id"].isNullOrEmpty()){
