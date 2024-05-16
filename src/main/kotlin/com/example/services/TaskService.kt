@@ -1,6 +1,6 @@
 package com.example.services
 
-import com.example.dao.DatabaseSingleton.dbQuery
+import com.example.dao.DatabaseSingleton.Companion.dbQuery
 import com.example.dao.interfaces.DAOTask
 import com.example.entities.Tasks
 import com.example.models.task_models.Task
