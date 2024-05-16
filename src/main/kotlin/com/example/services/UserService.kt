@@ -1,6 +1,6 @@
 package com.example.services
 
-import com.example.dao.DatabaseSingleton.dbQuery
+import com.example.dao.DatabaseSingleton.Companion.dbQuery
 import com.example.dao.interfaces.DAOUser
 import com.example.models.users_models.User
 import com.example.entities.Users
