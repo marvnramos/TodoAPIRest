@@ -32,7 +32,9 @@ class DatabaseSingleton(private val args: Array<String>) {
         }
     }
 
-    suspend fun <T> dbQuery(block: suspend () -> T): T = newSuspendedTransaction(Dispatchers.IO) {
-        block()
+    companion object{
+        suspend fun <T> dbQuery(block: suspend () -> T): T = newSuspendedTransaction(Dispatchers.IO) {
+            block()
+        }
     }
 }
