@@ -42,10 +42,12 @@ fun Application.configureAuthRoutes(args: Array<String>){
                     return@post
                 }
 
+                val userId = user.id.toString()
+
                 val token = JWT.create()
                     .withAudience(audience)
                     .withIssuer(jwtDomain)
-                    .withClaim("username", user.username)
+                    .withClaim("userId", userId)
                     .withExpiresAt(Date(System.currentTimeMillis() + 3_600_000))
                     .sign(Algorithm.HMAC256(secret))
 
