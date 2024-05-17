@@ -17,7 +17,7 @@ data class Task (
     @Serializable(with = DateSerializer::class)
     val dueDate: Date,
     @Serializable(with = UUIDSerializer::class)
-    val userId: UUID,
+    var userId: UUID? = null,
     @Serializable(with = DateSerializer::class)
     val createdAt:  Date? = Date(),
     @Serializable(with = DateSerializer::class)
