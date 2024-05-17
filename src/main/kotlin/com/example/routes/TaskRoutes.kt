@@ -7,6 +7,7 @@ import com.example.services.UserService
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
+import io.ktor.server.auth.jwt.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -37,22 +38,33 @@ fun Application.configureTaskRoutes() {
                     val payload = principal?.payload
                     val userId = payload?.getClaim("userId")?.asString()
 
-                val user = userImple.getUser(requestBody.userId)
+                    if (userId.isNullOrEmpty()) {
+                        call.respond(HttpStatusCode.BadRequest, "User ID is invalid")
+                        return@post
+                    }
 
-                if (user == null) {
-                    call.respond(HttpStatusCode.NotFound, "User not found")
+                    val id = UUID.fromString(userId)
+                    val user = userImple.getUser(id)
+
+                    if (user == null) {
+                        call.respond(HttpStatusCode.NotFound, "User not found")
+                        return@post
+                    }
+
+                    val requestBody: Task = call.receive()
+                    requestBody.userId = id
+
+                    val task = taskImple.addTask(requestBody)
+                    if (task != null) {
+                        call.respond(task)
+                    } else {
+                        call.respond(HttpStatusCode.InternalServerError, "Failed to create task")
+                    }
+                } catch (ex: Exception) {
+                    call.respond(HttpStatusCode.InternalServerError, "Internal Server Error: ${ex.message}")
                 }
-
-                val task = taskImple.addTask(requestBody)
-
-                call.respond(task!!)
-            }catch (ex:Exception){
-                println(ex.message)
-                call.respond(HttpStatusCode.InternalServerError, "Internal Server Error")
             }
-        }
 
-        authenticate("auth-jwt") {
             get("/v1/tasks/{id}") {
                 try {
                     val id = call.parameters["id"]?.let { UUID.fromString(it) }
@@ -73,46 +85,47 @@ fun Application.configureTaskRoutes() {
                     call.respond(HttpStatusCode.InternalServerError, "Internal Server Error")
                 }
             }
-        }
 
 
-        delete("/v1/tasks/{id}"){
-            try {
-                if(call.parameters["id"].isNullOrEmpty()){
-                    call.respond(HttpStatusCode.BadRequest, "Task id is required")
+
+            delete("/v1/tasks/{id}") {
+                try {
+                    if (call.parameters["id"].isNullOrEmpty()) {
+                        call.respond(HttpStatusCode.BadRequest, "Task id is required")
+                    }
+                    val id = UUID.fromString(call.parameters["id"])
+                    val task: Task? = taskImple.getTask(id)
+                    if (task == null) {
+                        call.respond(HttpStatusCode.NotFound, "Task not found")
+                    }
+
+                    taskImple.deleteTask(id)
+
+                    call.respond(task!!)
+                } catch (e: Exception) {
+                    call.respond(HttpStatusCode.InternalServerError, "Internal Server Error")
                 }
-                val id = UUID.fromString(call.parameters["id"])
-                val task: Task? = taskImple.getTask(id)
-                if (task == null) {
-                    call.respond(HttpStatusCode.NotFound, "Task not found")
-                }
-
-                taskImple.deleteTask(id)
-
-                call.respond(task!!)
-            } catch (e: Exception) {
-                call.respond(HttpStatusCode.InternalServerError, "Internal Server Error")
             }
-        }
-        patch ("/v1/tasks/{id}"){
-            try {
-                val id = call.parameters["id"]?.let { it1 -> UUID.fromString(it1) }
-                val requestBody: TaskPartial = call.receive<TaskPartial>()
+            patch("/v1/tasks/{id}") {
+                try {
+                    val id = call.parameters["id"]?.let { it1 -> UUID.fromString(it1) }
+                    val requestBody: TaskPartial = call.receive<TaskPartial>()
 
-                if (id == null) {
-                    call.respond(HttpStatusCode.BadRequest, "Task id is required")
-                    return@patch
+                    if (id == null) {
+                        call.respond(HttpStatusCode.BadRequest, "Task id is required")
+                        return@patch
+                    }
+                    val task: Boolean = taskImple.editTask(id, requestBody)
+
+                    if (!task) {
+                        call.respond(HttpStatusCode.NotModified, "Something failed. Task not modified")
+                    }
+
+                    call.respond(HttpStatusCode.OK, "Task successfully updated")
+                } catch (ex: Exception) {
+                    println(ex.message)
+                    call.respond(HttpStatusCode.InternalServerError, "${ex.message}")
                 }
-                val task: Boolean = taskImple.editTask(id, requestBody)
-
-                if(!task){
-                    call.respond(HttpStatusCode.NotModified, "Something failed. Task not modified")
-                }
-
-                call.respond(HttpStatusCode.OK, "Task successfully updated")
-            }catch(ex:Exception){
-                println(ex.message)
-                call.respond(HttpStatusCode.InternalServerError, "${ex.message}")
             }
         }
     }
