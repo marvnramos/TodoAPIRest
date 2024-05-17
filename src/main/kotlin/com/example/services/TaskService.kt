@@ -67,9 +67,6 @@ class TaskService:DAOTask {
             task.dueDate?.let { dueDate ->
                 it[Tasks.dueDate] = dueDate.time
             }
-            task.userId?.let { userId ->
-                it[Tasks.userId] = userId
-            }
             task.updatedAt?.let { updatedAt ->
                 it[Tasks.updatedAt] = updatedAt.time
             }
