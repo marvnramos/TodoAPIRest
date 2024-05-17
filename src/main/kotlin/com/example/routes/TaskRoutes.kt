@@ -16,21 +16,26 @@ fun Application.configureTaskRoutes() {
     val taskImple = TaskService()
     val userImple = UserService()
 
-    routing{
-        get ("/v1/tasks"){
-            try {
-                val tasks: List<Task> = taskImple.allTasks()
-                if(tasks.isEmpty()) {
-                    call.respond(HttpStatusCode.NotFound, "No tasks found")
+    routing {
+        authenticate("auth-jwt") {
+
+            get("/v1/tasks") {
+                try {
+                    val tasks: List<Task> = taskImple.allTasks()
+                    if (tasks.isEmpty()) {
+                        call.respond(HttpStatusCode.NotFound, "No tasks found")
+                    }
+                    call.respond(tasks)
+                } catch (ex: Exception) {
+                    call.respond(HttpStatusCode.InternalServerError, "Internal Server Error")
                 }
-                call.respond(tasks)
-            }catch(ex:Exception){
-                call.respond(HttpStatusCode.InternalServerError, "Internal Server Error")
             }
-        }
-        post("/v1/tasks") {
-            try{
-                val requestBody: Task = call.receive<Task>()
+
+            post("/v1/tasks") {
+                try {
+                    val principal = call.principal<JWTPrincipal>()
+                    val payload = principal?.payload
+                    val userId = payload?.getClaim("userId")?.asString()
 
                 val user = userImple.getUser(requestBody.userId)
 
