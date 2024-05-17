@@ -22,9 +22,7 @@ fun Application.configureAuthRoutes(args: Array<String>){
 
     val audience = appConfig.property("ktor.deployment.jwtAudience").getString()
     val secret = appConfig.property("ktor.deployment.jwtSecret").getString()
-//    val issuer = appConfig.property("ktor.deployment.jwtIssuer").toString()
     val jwtDomain = appConfig.property("ktor.deployment.jwtDomain").getString()
-
 
     routing {
         post("/v1/auth/login") {
