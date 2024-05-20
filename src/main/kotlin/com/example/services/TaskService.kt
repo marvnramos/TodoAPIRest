@@ -38,11 +38,11 @@ class TaskService:DAOTask {
     override suspend fun addTask(task: Task): Task? = dbQuery {
         val insertStatement = Tasks.insert {
             it[id] = task.id!!
-            it[title] = task.title!!
-            it[description] = task.description!!
-            it[status] = task.status!!
-            it[icon] = task.icon!!
-            it[dueDate] = task.dueDate!!.time
+            it[title] = task.title
+            it[description] = task.description
+            it[status] = task.status
+            it[icon] = task.icon
+            it[dueDate] = task.dueDate.time
             it[userId] = task.userId!!
             it[createdAt] = task.createdAt!!.time
             it[updatedAt] = task.updatedAt!!.time
