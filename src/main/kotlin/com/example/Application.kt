@@ -1,6 +1,6 @@
 package com.example
 
-import com.example.dao.DatabaseSingleton
+import com.example.xd.dao.DatabaseSingleton
 import com.example.libs.*
 import com.example.routes.configureRouting
 import io.ktor.server.application.*
@@ -22,7 +22,7 @@ fun main(args: Array<String>) {
 }
 
 fun Application.module(args: Array<String>) {
-    val configureDatabase = DatabaseSingleton(args)
+    val configureDatabase = com.example.xd.dao.DatabaseSingleton(args)
 
     configureSerialization()
     configureDatabase.init()
