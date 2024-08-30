@@ -8,7 +8,7 @@ object Tasks : Table() {
     val id = uuid("id")
     val title = varchar("title", 25)
     val description = varchar("description", 255)
-    val status = enumeration<Status>("status")
+    val status = enumeration<Status>("TODO")
     val icon = varchar("icon", 50)
     val dueDate = long("due_date")
     val userId = uuid("user_id").references(Users.id)
