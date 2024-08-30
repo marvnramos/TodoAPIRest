@@ -3,8 +3,10 @@ package com.example.tasks.commands
 import com.example.tasks.domain.Status
 import com.example.tasks.domain.models.Task
 import java.time.LocalDate
+import java.util.*
 
 data class UpdateTaskCommand(
+    val id: UUID,
     val title: String? = null,
     val description: String? = null,
     val dueDate: LocalDate? = null,
