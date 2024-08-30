@@ -1,6 +1,6 @@
-package com.example.tasks.domain.entities
+package com.example.tasks.domain.models
 
-import com.example.commons.entities.Entity
+import com.example.commons.models.Entity
 import com.example.tasks.domain.Status
 import java.util.*
 
