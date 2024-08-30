@@ -4,12 +4,12 @@ import com.example.commons.entities.Entity
 import com.example.tasks.domain.Status
 import java.util.*
 
-abstract class Task(
-    override var id : UUID = UUID.randomUUID(),
+class Task(
+    override var id: UUID = UUID.randomUUID(),
 
-    open val title: String,
-    open val description: String,
-    open val dueDate: String,
-    open val status: Status,
-    open val createdBy: UUID
-): Entity(id)
+    val title: String,
+    val description: String,
+    val dueDate: String,
+    val status: Status,
+    val createdBy: UUID,
+) : Entity(id)
