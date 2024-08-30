@@ -1,8 +1,9 @@
 package com.example
 
-import com.example.xd.dao.DatabaseSingleton
-import com.example.libs.*
-import com.example.routes.configureRouting
+import com.example.plugins.configureSerialization
+import com.example.xd.libs.configureHTTP
+import com.example.xd.libs.configureSecurity
+import com.example.xd.routes.configureRouting
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
