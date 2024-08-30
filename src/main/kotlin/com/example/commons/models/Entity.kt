@@ -1,4 +1,4 @@
-package com.example.commons.entities
+package com.example.commons.models
 
 import java.util.UUID
 
