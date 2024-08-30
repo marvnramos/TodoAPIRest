@@ -8,5 +8,13 @@ import kotlinx.serialization.Serializable
 data class TaskResponseDto(
     override val message: String,
     override val status: String,
-    override val data: TaskDataDto
-): IResponseDto<TaskDataDto>
+    override val data: TaskDataDto,
+) : IResponseDto<TaskDataDto> {
+    fun toDto(): TaskResponseDto {
+        return TaskResponseDto(
+            message = message,
+            status = status,
+            data = data
+        )
+    }
+}
