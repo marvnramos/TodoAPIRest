@@ -1,4 +1,4 @@
-package com.example.tasks.services
+package com.example.tasks.services.interfaces
 
 import com.example.tasks.commands.*
 import com.example.tasks.domain.models.Task
