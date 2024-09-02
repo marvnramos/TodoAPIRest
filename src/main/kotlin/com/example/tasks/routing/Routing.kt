@@ -7,12 +7,14 @@ import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
+import kotlinx.serialization.Serializable
 import java.util.*
 
 fun Application.configureTaskRoutes() {
     routing {
-        get("'/hello") {
-            call.respond(HttpStatusCode.OK, "hello ")
+        get("/hello") {
+            call.respond(HttpStatusCode.OK, "hello")
         }
+
     }
 }
