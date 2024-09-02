@@ -1,7 +1,9 @@
 package com.example.commons.interfaces
 
-interface IResponseDto<T> {
+import kotlinx.serialization.Serializable
+
+interface IResponseDto<TEntity> {
     val status: String
     val message: String
-    val data: T
+    val data: TEntity
 }
