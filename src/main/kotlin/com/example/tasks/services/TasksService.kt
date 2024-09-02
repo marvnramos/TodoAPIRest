@@ -33,5 +33,4 @@ abstract class TasksService(private val taskRepository: TaskRepository) : ITasks
         taskRepository.delete(command.id)
         return true
     }
-
 }
