@@ -3,6 +3,7 @@ package com.example.tasks.services
 import com.example.tasks.commands.*
 import com.example.tasks.domain.models.Task
 import com.example.tasks.repositories.implementation.TaskRepository
+import com.example.tasks.services.interfaces.ITasksService
 
 abstract class TasksService(private val taskRepository: TaskRepository) : ITasksService {
     override suspend fun getTasks(command: GetTasksCommand): List<Task> {
