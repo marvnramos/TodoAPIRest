@@ -1,15 +1,20 @@
 package com.example.tasks.services
 
-import com.example.tasks.commands.CreateTaskCommand
-import com.example.tasks.commands.DeleteTaskCommand
-import com.example.tasks.commands.GetTasksCommand
-import com.example.tasks.commands.UpdateTaskCommand
+import com.example.tasks.commands.*
 import com.example.tasks.domain.models.Task
-import com.example.tasks.repositories.interfaces.ITaskRepository
+import com.example.tasks.repositories.implementation.TaskRepository
 
-abstract class TasksService(private val taskRepository: ITaskRepository) : ITasksService {
+abstract class TasksService(private val taskRepository: TaskRepository) : ITasksService {
     override suspend fun getTasks(command: GetTasksCommand): List<Task> {
         return taskRepository.getAll()
+    }
+
+    override suspend fun getTaskById(command: GetTaskByIdCommand): Task? {
+        return taskRepository.findById(command.id)
+    }
+
+    override suspend fun getOneTask(command: GetOneTaskCommand): Task? {
+        return taskRepository.find(command.predicate)
     }
 
     override suspend fun createTask(command: CreateTaskCommand): Task? {
