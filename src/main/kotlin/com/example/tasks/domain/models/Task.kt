@@ -12,6 +12,6 @@ class Task(
     val status: Status,
     val dueDate: Instant,
     val createdBy: UUID? = null,
-    val createdAt: Instant,
-    val updatedAt: Instant
+    val createdAt: Instant?,
+    val updatedAt: Instant?
 ) : Entity(id)
