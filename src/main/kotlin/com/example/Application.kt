@@ -1,9 +1,12 @@
 package com.example
 
+import com.example.plugins.DatabaseSingleton
+import com.example.plugins.configureHTTP
+import com.example.plugins.configureSecurity
 import com.example.plugins.configureSerialization
-import com.example.xd.libs.configureHTTP
-import com.example.xd.libs.configureSecurity
-import com.example.xd.routes.configureRouting
+//import com.example.xd.libs.configureHTTP
+//import com.example.xd.libs.configureSecurity
+//import com.example.xd.routes.configureRouting
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
@@ -14,7 +17,7 @@ fun main(args: Array<String>) {
 
     val host = appConfig.property("ktor.deployment.host").getString()
     val port = appConfig.property("ktor.deployment.port").getString().toInt()
-
+6
 
     embeddedServer(Netty, port = port, host = host){
         module(args)
@@ -23,11 +26,11 @@ fun main(args: Array<String>) {
 }
 
 fun Application.module(args: Array<String>) {
-    val configureDatabase = com.example.xd.dao.DatabaseSingleton(args)
+    val configureDatabase = DatabaseSingleton(args)
 
     configureSerialization()
     configureDatabase.init()
     configureHTTP()
     configureSecurity(args)
-    configureRouting(args)
+    configureRouting()
 }
