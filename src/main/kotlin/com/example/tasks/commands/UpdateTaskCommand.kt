@@ -2,6 +2,7 @@ package com.example.tasks.commands
 
 import com.example.tasks.domain.Status
 import com.example.tasks.domain.models.Task
+import java.time.Instant
 import java.time.LocalDate
 import java.util.*
 
@@ -17,7 +18,9 @@ data class UpdateTaskCommand(
             title = task.title,
             description = task.description,
             dueDate = task.dueDate,
-            status = task.status
+            status = task.status,
+            createdAt = Instant.now(),
+            updatedAt = Instant.now()
         )
     }
 }
