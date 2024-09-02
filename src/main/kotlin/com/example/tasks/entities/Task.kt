@@ -1,7 +1,7 @@
 package com.example.tasks.entities
 
 import com.example.tasks.domain.Status
-import com.example.xd.entities.Users // change this
+import com.example.users.entities.Users
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.javatime.timestamp
 
