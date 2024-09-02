@@ -1,5 +1,6 @@
 package com.example.tasks.routing
 
+import com.example.commons.models.ResData
 import com.example.tasks.commands.CreateTaskCommand
 import com.example.tasks.commands.GetTasksCommand
 import com.example.tasks.domain.Status
@@ -39,13 +40,14 @@ fun Application.configureTaskRoutes() {
             get("/tasks"){
                 val command = GetTasksCommand()
 
-                val resonse = TaskResponseDto(
-                    status = "success",
-                    message = "Here are all tasks!",
-                    data = command
-                )
+                val tasks = taskService.getTasks(command)
 
-                call.respond(HttpStatusCode.OK, resonse)
+                val response = TaskResponseDto(
+                    status = "success",
+                    message = "here are all task!",
+                    data = ResData.Multiple(tasks)
+                )
+                call.respond(HttpStatusCode.OK, response)
             }
         }
     }
