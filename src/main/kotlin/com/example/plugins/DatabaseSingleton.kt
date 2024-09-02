@@ -1,7 +1,7 @@
 package com.example.plugins
 
-import com.example.xd.entities.Tasks
-import com.example.xd.entities.Users
+import com.example.tasks.entities.Tasks
+import com.example.users.entities.Users
 import io.ktor.server.engine.*
 import kotlinx.coroutines.*
 import org.jetbrains.exposed.sql.*
@@ -30,7 +30,7 @@ class DatabaseSingleton(private val args: Array<String>) {
         )
 
         transaction(database) {
-            SchemaUtils.create(com.example.xd.entities.Tasks, com.example.xd.entities.Users)
+            SchemaUtils.create(Tasks, Users)
         }
     }
 
