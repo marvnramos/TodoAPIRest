@@ -1,0 +1,15 @@
+ktor:
+  deployment:
+    port: 8080
+    host: "0.0.0.0"
+    db:
+      jdbcURL: "jdbc:postgresql://localhost:5432/my_data_base"
+      user: "postgres"
+      password: "my-password"
+    jwtAudience: "my-audience"
+    jwtDomain: "my-domain"
+    jwtRealm: "my-realm"
+    jwtSecret: "secret-key"
+  application:
+    modules:
+      - com.example.ApplicationKt.module
