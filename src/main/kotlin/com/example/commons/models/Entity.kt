@@ -1,13 +1,11 @@
 package com.example.commons.models
 
-import com.example.commons.serializers.UUIDSerializer
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import java.util.UUID
 
 @Serializable
 open class Entity(
-    @Serializable(with = UUIDSerializer::class)
-    @SerialName("entity_id")
+    @Transient
     open val id: UUID? = UUID.randomUUID()
 )
