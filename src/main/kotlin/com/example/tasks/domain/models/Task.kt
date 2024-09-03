@@ -4,7 +4,6 @@ import com.example.commons.models.Entity
 import com.example.commons.serializers.InstantSerializer
 import com.example.commons.serializers.UUIDSerializer
 import com.example.tasks.domain.Status
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import java.time.Instant
 import java.util.*
@@ -12,7 +11,6 @@ import java.util.*
 @Serializable
 data class Task(
     @Serializable(with = UUIDSerializer::class)
-    @SerialName("task_id")
     override var id: UUID? = UUID.randomUUID(),
     val title: String,
     val description: String,
@@ -26,3 +24,4 @@ data class Task(
     @Serializable(with = InstantSerializer::class)
     val updatedAt: Instant?
 ) : Entity(id)
+
