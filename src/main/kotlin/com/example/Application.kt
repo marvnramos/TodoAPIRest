@@ -4,9 +4,6 @@ import com.example.plugins.DatabaseSingleton
 import com.example.plugins.configureHTTP
 import com.example.plugins.configureSecurity
 import com.example.plugins.configureSerialization
-//import com.example.xd.libs.configureHTTP
-//import com.example.xd.libs.configureSecurity
-//import com.example.xd.routes.configureRouting
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
