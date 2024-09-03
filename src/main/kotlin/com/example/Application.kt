@@ -1,8 +1,9 @@
 package com.example
 
-import com.example.dao.DatabaseSingleton
-import com.example.libs.*
-import com.example.routes.configureRouting
+import com.example.plugins.DatabaseSingleton
+import com.example.plugins.configureHTTP
+import com.example.plugins.configureSecurity
+import com.example.plugins.configureSerialization
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
@@ -13,7 +14,7 @@ fun main(args: Array<String>) {
 
     val host = appConfig.property("ktor.deployment.host").getString()
     val port = appConfig.property("ktor.deployment.port").getString().toInt()
-
+6
 
     embeddedServer(Netty, port = port, host = host){
         module(args)
@@ -28,5 +29,5 @@ fun Application.module(args: Array<String>) {
     configureDatabase.init()
     configureHTTP()
     configureSecurity(args)
-    configureRouting(args)
+    configureRouting()
 }
