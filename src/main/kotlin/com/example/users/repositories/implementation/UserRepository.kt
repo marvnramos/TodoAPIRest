@@ -4,26 +4,19 @@ import com.example.plugins.DatabaseSingleton.Companion.dbQuery
 import com.example.users.domain.models.User
 import com.example.users.entities.Users
 import com.example.users.repositories.interfaces.IUserRepository
-import org.jetbrains.exposed.sql.ResultRow
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.select
-import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.statements.UpdateBuilder
 import java.time.Instant
 import java.util.*
 
 class UserRepository : IUserRepository {
     override suspend fun getAll(): List<User> = dbQuery {
-        Users
-            .selectAll()
-            .map(::resultRowToUser)
+        Users.selectAll().map(::resultRowToUser)
     }
 
     override suspend fun findById(id: UUID): User? = dbQuery {
-        Users
-            .select { Users.id eq id }
-            .map { resultRowToUser(it) }
-            .singleOrNull()
+        Users.select { Users.id eq id }.map { resultRowToUser(it) }.singleOrNull()
     }
 
     override suspend fun insert(entity: User): User? = dbQuery {
@@ -35,16 +28,19 @@ class UserRepository : IUserRepository {
         entity
     }
 
-    override suspend fun find(predicate: (User) -> Boolean): User? {
-        TODO("Not yet implemented")
+    override suspend fun find(predicate: (User) -> Boolean): User? = dbQuery {
+        Users.selectAll().map(::resultRowToUser).find(predicate)
     }
 
-    override suspend fun replace(entity: User): Boolean {
-        TODO("Not yet implemented")
+    override suspend fun replace(entity: User): Boolean = dbQuery {
+        val rowsUpdated = Users.update({ Users.id eq entity.id }) {
+            setUserValues(it, entity)
+        }
+        rowsUpdated > 0
     }
 
-    override suspend fun delete(id: UUID): Boolean {
-        TODO("Not yet implemented")
+    override suspend fun delete(id: UUID): Boolean = dbQuery {
+        Users.deleteWhere { Users.id eq id } > 0
     }
 
     private fun resultRowToUser(row: ResultRow): User = User(
