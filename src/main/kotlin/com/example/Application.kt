@@ -14,7 +14,7 @@ fun main(args: Array<String>) {
 
     val host = appConfig.property("ktor.deployment.host").getString()
     val port = appConfig.property("ktor.deployment.port").getString().toInt()
-6
+
 
     embeddedServer(Netty, port = port, host = host){
         module(args)
