@@ -5,7 +5,11 @@ import com.example.users.domain.models.User
 import com.example.users.entities.Users
 import com.example.users.repositories.interfaces.IUserRepository
 import org.jetbrains.exposed.sql.ResultRow
+import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.statements.UpdateBuilder
+import java.time.Instant
 import java.util.*
 
 class UserRepository : IUserRepository {
@@ -15,12 +19,20 @@ class UserRepository : IUserRepository {
             .map(::resultRowToUser)
     }
 
-    override suspend fun findById(id: UUID): User? {
-        TODO("Not yet implemented")
+    override suspend fun findById(id: UUID): User? = dbQuery {
+        Users
+            .select { Users.id eq id }
+            .map { resultRowToUser(it) }
+            .singleOrNull()
     }
 
-    override suspend fun insert(entity: User): User? {
-        TODO("Not yet implemented")
+    override suspend fun insert(entity: User): User? = dbQuery {
+        Users.insert {
+            it[id] = entity.id
+            setUserValues(it, entity)
+            it[createdAt] = entity.createdAt ?: Instant.now()
+        }
+        entity
     }
 
     override suspend fun find(predicate: (User) -> Boolean): User? {
@@ -44,4 +56,13 @@ class UserRepository : IUserRepository {
         createdAt = row[Users.createdAt],
         updatedAt = row[Users.updatedAt]
     )
+
+    private fun setUserValues(statement: UpdateBuilder<*>, entity: User) {
+        statement[Users.username] = entity.username
+        statement[Users.email] = entity.email
+        statement[Users.profilePhoto] = entity.profilePhoto
+        statement[Users.password] = entity.password
+        statement[Users.updatedAt] = entity.updatedAt ?: Instant.now()
+
+    }
 }
