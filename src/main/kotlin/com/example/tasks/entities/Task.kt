@@ -8,7 +8,7 @@ import org.jetbrains.exposed.sql.javatime.timestamp
 object Tasks : Table() {
     val id = uuid("id")
     val title = varchar("title", 25)
-    val description = varchar("description", 255)
+    val description = text("description")
     val status = enumerationByName("status", 10, Status::class)
     val dueDate = timestamp("due_date")
     val createdBy = uuid("created_by").references(Users.id)
