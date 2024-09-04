@@ -1,6 +1,8 @@
 package com.example.plugins
 
+import com.example.notifications.entities.Notifications
 import com.example.tasks.entities.Tasks
+import com.example.tasks.entities.UserTasks
 import com.example.users.entities.Users
 import io.ktor.server.engine.*
 import kotlinx.coroutines.*
@@ -30,7 +32,7 @@ class DatabaseSingleton(private val args: Array<String>) {
         )
 
         transaction(database) {
-            SchemaUtils.create(Tasks, Users)
+            SchemaUtils.create(Tasks, Users, Notifications, UserTasks, Tasks)
         }
     }
 
