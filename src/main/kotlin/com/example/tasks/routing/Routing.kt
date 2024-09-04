@@ -4,7 +4,7 @@ import com.example.commons.models.ResData
 import com.example.tasks.commands.CreateTaskCommand
 import com.example.tasks.commands.GetTasksCommand
 import com.example.tasks.domain.Status
-import com.example.tasks.domain.models.Task
+import com.example.tasks.dtos.requests.AddRequestDto
 import com.example.tasks.dtos.responses.TaskResponseDto
 import com.example.tasks.repositories.implementation.TaskRepository
 import com.example.tasks.services.TasksServiceImpl
@@ -15,7 +15,6 @@ import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
-import kotlinx.serialization.Serializable
 import java.time.Instant
 import java.util.*
 
@@ -27,8 +26,39 @@ fun Application.configureTaskRoutes() {
             call.respond(HttpStatusCode.OK, "hello")
         }
 
-        route("/api/v1"){
-            post("/tasks/store"){
+        route("/api/v1") {
+            post("/tasks/store") {
+                try {
+                    val request = call.receive<AddRequestDto>()
+                    if (request.title.isBlank()) {
+                        call.respond(HttpStatusCode.BadRequest, "Title is required")
+                        return@post
+                    }
+//                    if(request.description.isBlank()){
+//                        call.respond(HttpStatusCode.BadRequest, "Description is required")
+//                        return@post
+                    // description could be nullable
+//                    }
+                    if (request.dueDate.toString().isBlank()) {
+                        call.respond(HttpStatusCode.BadRequest, "Due date is required")
+                        return@post
+                    }
+
+                    if (request.createdBy.toString().isBlank()) {
+                        TODO("get user id by auth token")
+                    }
+
+                    val command = CreateTaskCommand(
+                        title = request.title,
+                        description = request.description,
+                        dueDate = request.dueDate,
+                        status = request.status!!,
+                        createdBy = UUID.randomUUID()
+                    )
+
+                    val task = taskService.createTask(command)
+
+
 //                val command: CreateTaskCommand
 //                val response = TaskResponseDto(
 //                    "mi titulo",
@@ -36,8 +66,12 @@ fun Application.configureTaskRoutes() {
 //
 //
 //                )
+                } catch (error: Exception) {
+                    println(error)
+                    call.respond(HttpStatusCode.InternalServerError, "An error occurred :/")
+                }
             }
-            get("/tasks"){
+            get("/tasks") {
                 val command = GetTasksCommand()
 
                 val tasks = taskService.getTasks(command)
