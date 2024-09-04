@@ -13,7 +13,7 @@ data class User(
     override val id: UUID = UUID.randomUUID(),
     val username: String,
     val email: String,
-    val profilePhoto: String,
+    val profilePhoto: String?,
     val password: String,
     @Serializable(with = InstantSerializer::class)
     val createdAt: Instant?,
