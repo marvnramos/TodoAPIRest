@@ -13,8 +13,8 @@ data class Task(
     @Serializable(with = UUIDSerializer::class)
     override var id: UUID? = UUID.randomUUID(),
     val title: String,
-    val description: String,
-    val status: Status,
+    val description: String?,
+    val status: Status? = Status.TODO,
     @Serializable(with = InstantSerializer::class)
     val dueDate: Instant,
     @Serializable(with = UUIDSerializer::class)
@@ -22,6 +22,6 @@ data class Task(
     @Serializable(with = InstantSerializer::class)
     val createdAt: Instant?,
     @Serializable(with = InstantSerializer::class)
-    val updatedAt: Instant?
+    val updatedAt: Instant?,
 ) : Entity(id)
 
