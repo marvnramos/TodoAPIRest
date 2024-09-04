@@ -56,7 +56,7 @@ class UserRepository : IUserRepository {
     private fun setUserValues(statement: UpdateBuilder<*>, entity: User) {
         statement[Users.username] = entity.username
         statement[Users.email] = entity.email
-        statement[Users.profilePhoto] = entity.profilePhoto
+        statement[Users.profilePhoto] = entity.profilePhoto ?: return
         statement[Users.password] = entity.password
         statement[Users.updatedAt] = entity.updatedAt ?: Instant.now()
 
