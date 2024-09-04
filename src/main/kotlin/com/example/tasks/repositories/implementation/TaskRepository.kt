@@ -63,7 +63,7 @@ class TaskRepository : ITaskRepository {
 
     private fun setTaskValues(statement: UpdateBuilder<*>, entity: Task) {
         statement[Tasks.title] = entity.title
-        statement[Tasks.description] = entity.description
+        statement[Tasks.description] = entity.description ?: return
         statement[Tasks.status] = entity.status
         statement[Tasks.dueDate] = entity.dueDate
         statement[Tasks.createdBy] = entity.createdBy!!
