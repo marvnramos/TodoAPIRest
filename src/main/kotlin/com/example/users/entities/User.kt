@@ -7,7 +7,7 @@ object Users : Table() {
     val id = uuid("id")
     val username = varchar("username", 50)
     val email = varchar("email", 100)
-    val profilePhoto = varchar("profile_photo", 255)
+    val profilePhoto = varchar("profile_photo", 255)  // todo: set default image
     val password = varchar("password", 12)
     val createdAt = timestamp("created_at")
     val updatedAt = timestamp("updated_at")
