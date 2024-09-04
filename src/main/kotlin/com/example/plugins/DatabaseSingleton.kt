@@ -1,6 +1,7 @@
 package com.example.plugins
 
 import com.example.notifications.entities.Notifications
+import com.example.relationships.entities.Relationships
 import com.example.tasks.entities.Tasks
 import com.example.tasks.entities.UserTasks
 import com.example.users.entities.Users
@@ -32,7 +33,7 @@ class DatabaseSingleton(private val args: Array<String>) {
         )
 
         transaction(database) {
-            SchemaUtils.create(Tasks, Users, Notifications, UserTasks, Tasks)
+            SchemaUtils.create(Tasks, Users, Notifications, UserTasks, Relationships)
         }
     }
 
