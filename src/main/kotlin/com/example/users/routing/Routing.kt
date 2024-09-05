@@ -1,62 +1,50 @@
 package com.example.users.routing
 
+import com.example.commons.dtos.ResDataDto
+import com.example.commons.validation.HttpValidationHelper
+import com.example.users.domain.models.User
 import com.example.users.dtos.requests.AddRequestDto
+import com.example.users.dtos.responses.UserResponseDto
+import com.example.users.middlewares.UserMiddleware
+import com.example.users.middlewares.UserMiddleware.Companion.validateUser
+import com.example.users.repositories.implementation.UserRepository
+import com.example.users.services.implementations.UserServiceImpl
 import io.ktor.http.*
-import io.ktor.http.cio.HttpMessage
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-
-data class res(
-    val message: String
-)
+import java.time.Instant
 
 fun Application.configureUsersRoutes() {
+    val userRepository = UserRepository()
+    val userService = UserServiceImpl(userRepository)
+    val userMiddleware = UserMiddleware(userService)
+
     routing {
         route("/api/v1") {
             post("/users/store") {
                 try {
                     val request = call.receive<AddRequestDto>()
 
-                    if (request.username.isBlank()) {
-                        call.respond(HttpStatusCode.BadRequest, res(
-                            message = "Username is required"
-                        ))
-                        return@post
-                    }
+                    validateUser(request, userMiddleware)
 
-                    if (request.email.isBlank()) {
-                        call.respond(HttpStatusCode.BadRequest, "Email is required")
-                        return@post
-                    }
-                    if (request.email.isNotBlank()) {
-                        val emailRegex = Regex("^((?!\\.)[\\w-_.]*[^.])(@\\w+)(\\.\\w+(\\.\\w+)?[^.\\W])$")
-                        if (!emailRegex.matches(request.email)) {
-                            call.respond(HttpStatusCode.BadRequest, "Invalid email")
-                            return@post
-                        }
-                    }
+                    val user = User(
+                        username = request.username!!,
+                        email = request.email!!,
+                        profilePhoto = request.profilePhoto ?: "https://example.com/photo.jpg",
+                        password = request.password!!,
+                        createdAt = Instant.now(),
+                        updatedAt = Instant.now()
+                    )
 
-                    if (request.password.isBlank()) {
-                        call.respond(HttpStatusCode.BadRequest, "Password is required")
-                        return@post
-                    }
+                    call.respond(
+                        HttpStatusCode.OK,
+                        UserResponseDto("success", "User was created", ResDataDto.Single(user))
+                    )
 
-                    if (request.password.isNotBlank()) {
-                        val passwordRegex = Regex(
-                            "^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[@#\$%^!&+=.\\-_]){2,}[A-Za-z0-9@#\$%^!&+=.\\-_]{8,}$"
-                        )
-                        if (!passwordRegex.matches(request.password)) {
-                            call.respond(HttpStatusCode.BadRequest, "Invalid password form")
-                            return@post
-                        }
-                    }
-
-                    call.respond("You've logged! :3")
-
-
-                    call.respond(HttpStatusCode.OK, request)
+                } catch (e: IllegalArgumentException) {
+                    HttpValidationHelper.responseError(call, e.message ?: "Invalid data")
                 } catch (err: Exception) {
                     println("Something went wrong: $err")
                     call.respond(HttpStatusCode.InternalServerError, "An error occurred")
