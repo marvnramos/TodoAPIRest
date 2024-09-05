@@ -41,13 +41,12 @@ class UserMiddleware(private val userService: UserServiceImpl) {
         if (username.isNullOrEmpty()) {
             throw IllegalArgumentException("Username is required")
         }
-        if (username.isBlank()) {
-            throw IllegalArgumentException("Username cannot be blank")
-        }
         if (existingUsername(username)) {
             throw IllegalArgumentException("Username already in use")
         }
     }
+
+    // TODO: Fix password validation when this isn't in payload request ✍️
 
     suspend fun validatePassword(password: String?) {
         if (password.isNullOrEmpty()) {
