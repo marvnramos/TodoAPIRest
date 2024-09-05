@@ -35,4 +35,12 @@ abstract class UserService(private val userRepository: UserRepository) : IUsersS
         command.updatePassword(user)
         return true
     }
+
+    override suspend fun getUserByEmail(command: GetByEmailCommand): User? {
+        return userRepository.findByEmail(command.email)
+    }
+
+    override suspend fun getUserByUsername(command: GetByUsernameCommmand): User? {
+        return userRepository.findByUsername(command.username)
+    }
 }
