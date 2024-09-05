@@ -43,6 +43,14 @@ class UserRepository : IUserRepository {
         Users.deleteWhere { Users.id eq id } > 0
     }
 
+    suspend fun findByEmail(email: String): User? = dbQuery {
+        Users.select { Users.email eq email }.map { resultRowToUser(it) }.singleOrNull()
+    }
+
+    suspend fun findByUsername(username: String): User? = dbQuery {
+        Users.select { Users.username eq username }.map { resultRowToUser(it) }.singleOrNull()
+    }
+
     private fun resultRowToUser(row: ResultRow): User = User(
         id = row[Users.id],
         username = row[Users.username],
