@@ -4,8 +4,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class AddRequestDto(
-    val username: String,
-    val email: String,
+    val username: String? = null,
+    val email: String? = null,
     val profilePhoto: String?,
-    val password: String
+    val password: String? = null,
 )
