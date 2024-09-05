@@ -1,9 +1,9 @@
-import com.example.commons.models.ResData
+import com.example.commons.dtos.ResDataDto
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.*
 
 class ResDataSerializer<T : Any>(tSerializer: KSerializer<T>) :
-    JsonTransformingSerializer<ResData<T>>(ResData.serializer(tSerializer)) {
+    JsonTransformingSerializer<ResDataDto<T>>(ResDataDto.serializer(tSerializer)) {
 
     override fun transformSerialize(element: JsonElement): JsonElement {
         return removeTypeFields(element)
