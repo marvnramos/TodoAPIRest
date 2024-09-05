@@ -1,9 +1,8 @@
 package com.example.tasks.routing
 
-import com.example.commons.models.ResData
+import com.example.commons.dtos.ResDataDto
 import com.example.tasks.commands.CreateTaskCommand
 import com.example.tasks.commands.GetTasksCommand
-import com.example.tasks.domain.Status
 import com.example.tasks.dtos.requests.AddRequestDto
 import com.example.tasks.dtos.responses.TaskResponseDto
 import com.example.tasks.repositories.implementation.TaskRepository
@@ -11,11 +10,8 @@ import com.example.tasks.services.TasksServiceImpl
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
 import io.ktor.http.*
-import io.ktor.server.auth.*
-import io.ktor.server.auth.jwt.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
-import java.time.Instant
 import java.util.*
 
 fun Application.configureTaskRoutes() {
@@ -79,7 +75,7 @@ fun Application.configureTaskRoutes() {
                 val response = TaskResponseDto(
                     status = "success",
                     message = "here are all task!",
-                    data = ResData.Multiple(tasks)
+                    data = ResDataDto.Multiple(tasks)
                 )
                 call.respond(HttpStatusCode.OK, response)
             }
