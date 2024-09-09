@@ -8,7 +8,7 @@ import com.example.users.services.implementations.UserServiceImpl
 class UserMiddleware(private val userService: UserServiceImpl) {
 
     private val emailRegex = Regex("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")
-    private val passwordRegex = Regex("")
+    private val passwordRegex = Regex("^(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*(),.?\":{}|<>]).{8,}\$")
 
     private fun isValidEmail(email: String): Boolean = emailRegex.matches(email)
     private fun isValidPassword(password: String): Boolean = passwordRegex.matches(password)
@@ -46,26 +46,31 @@ class UserMiddleware(private val userService: UserServiceImpl) {
         }
     }
 
-    // TODO: Fix password validation when this isn't in payload request ✍️
-
     suspend fun validatePassword(password: String?) {
         if (password.isNullOrEmpty()) {
-            throw IllegalArgumentException("password is required")
+            throw IllegalArgumentException("Password is required")
         }
+
         if (password.isBlank()) {
-            throw IllegalArgumentException("password cannot be blank")
+            throw IllegalArgumentException("Password cannot be blank")
         }
+
+        if (!isValidPassword(password)) {
+            throw IllegalArgumentException("Password is not valid")
+        }
+
         if (existingUsername(password)) {
-            throw IllegalArgumentException("password already in use")
+            throw IllegalArgumentException("Username cannot be password")
         }
+
+        println(password)
     }
 
     companion object {
         suspend fun validateUser(request: AddRequestDto, userMiddleware: UserMiddleware) {
-            val (username, email, password) = request
-            userMiddleware.validateUsername(username)
-            userMiddleware.validateEmail(email)
-            userMiddleware.validatePassword(password)
+            userMiddleware.validateUsername(request.username)
+            userMiddleware.validateEmail(request.email)
+            userMiddleware.validatePassword(request.password)
         }
     }
 }
