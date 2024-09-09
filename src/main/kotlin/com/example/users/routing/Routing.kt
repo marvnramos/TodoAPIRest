@@ -5,6 +5,7 @@ import com.example.commons.validation.HttpValidationHelper
 import com.example.users.commands.CreateUserCommand
 import com.example.users.domain.models.User
 import com.example.users.dtos.requests.AddRequestDto
+import com.example.users.dtos.requests.SendEmailRequestDto
 import com.example.users.dtos.responses.UserResponseDto
 import com.example.users.middlewares.UserMiddleware
 import com.example.users.middlewares.UserMiddleware.Companion.validateUser
@@ -12,20 +13,30 @@ import com.example.users.repositories.implementation.UserRepository
 import com.example.users.services.implementations.UserServiceImpl
 import io.ktor.http.*
 import io.ktor.server.application.*
+import io.ktor.server.engine.*
+import io.ktor.server.plugins.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import jakarta.mail.*
+import jakarta.mail.internet.InternetAddress
+import jakarta.mail.internet.MimeMessage
 import org.mindrot.jbcrypt.BCrypt
 import java.time.Instant
+import java.util.*
 
-fun Application.configureUsersRoutes() {
+
+fun Application.configureUsersRoutes(args: Array<String>) {
     val userRepository = UserRepository()
     val userService = UserServiceImpl(userRepository)
     val userMiddleware = UserMiddleware(userService)
 
+    val env = commandLineEnvironment(args)
+    val appConfig = env.config
+
     routing {
-        route("/api/v1") {
-            post("/users/store") {
+        route("/api/v1/users") {
+            post("/store") {
                 try {
                     val request = call.receive<AddRequestDto>()
 
@@ -61,12 +72,60 @@ fun Application.configureUsersRoutes() {
                 } catch (e: NullPointerException) {
                     call.respond(
                         HttpStatusCode.InternalServerError,
-                        "A null value was encountered \n error: ${e.message}"
+                        "A null value was encountered"
                     )
                 } catch (err: Exception) {
                     println("Something went wrong: $err")
                     call.respond(HttpStatusCode.InternalServerError, "An error occurred")
                 }
+            }
+            post("/request-password-change") {
+                try {
+                    val request = call.receive<SendEmailRequestDto>()
+                    userMiddleware.validateEmail(request.email)
+
+                    val props = Properties().apply {
+                        put("mail.smtp.auth", "true")
+                        put("mail.smtp.starttls.enable", "true")
+                        put("mail.smtp.host", "smtp.gmail.com")
+                        put("mail.smtp.port", "587")
+                    }
+
+                    val session = Session.getInstance(props, object : Authenticator() {
+                        override fun getPasswordAuthentication(): PasswordAuthentication {
+                            return PasswordAuthentication(
+                                appConfig.property("ktor.deployment.email_credentials.mail").getString(),
+                                appConfig.property("ktor.deployment.email_credentials.password").getString()
+                            )
+                        }
+                    })
+
+                    val message = MimeMessage(session).apply {
+                        setFrom(InternetAddress("example@gmail.com"))
+                        setRecipients(Message.RecipientType.TO, InternetAddress.parse(request.email))
+                        subject = "Cambio de contraseña"
+                        setText("Instrucciones para cambiar la contraseña")
+                    }
+
+                    Transport.send(message)
+                    println("Correo enviado exitosamente a ${request.email}")
+                    call.respond(HttpStatusCode.OK, "Correo enviado exitosamente")
+
+                } catch (e: AuthenticationFailedException) {
+                    println("Error de autenticación: ${e.message}")
+                    call.respond(HttpStatusCode.Unauthorized, "Error de autenticación. Verifica tus credenciales.")
+                } catch (e: MessagingException) {
+                    println("Error al enviar el correo: ${e.message}")
+                    call.respond(HttpStatusCode.InternalServerError, "Error al enviar el correo.")
+                } catch (e: BadRequestException) {
+                    println("Something went wrong: ${e.message}")
+                    call.respond(HttpStatusCode.BadRequest, "Invalid request")
+                } catch (e: IllegalArgumentException) {
+                    HttpValidationHelper.responseError(call, e.message ?: "Invalid data")
+                }
+            }
+            patch("/{id}/forgot-password") {
+
             }
         }
     }
