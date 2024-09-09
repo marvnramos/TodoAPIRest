@@ -3,6 +3,7 @@ package com.example.users.middlewares
 import com.example.users.commands.GetByEmailCommand
 import com.example.users.commands.GetByUsernameCommmand
 import com.example.users.dtos.requests.AddRequestDto
+import com.example.users.dtos.requests.LoginRequestDto
 import com.example.users.services.implementations.UserServiceImpl
 
 class UserMiddleware(private val userService: UserServiceImpl) {
@@ -20,9 +21,14 @@ class UserMiddleware(private val userService: UserServiceImpl) {
     }
 
     private suspend fun existingUsername(username: String): Boolean {
-        val command = GetByUsernameCommmand(username)
-        val user = userService.getUserByUsername(command)
-        return user != null
+        return try {
+            val command = GetByUsernameCommmand(username) // Corrige el nombre de la clase
+            val user = userService.getUserByUsername(command)
+            user != null
+        } catch (e: Exception) {
+            println("Error checking existing username: ${e.message}")
+            false
+        }
     }
 
     suspend fun validateEmail(email: String?) {
@@ -62,8 +68,25 @@ class UserMiddleware(private val userService: UserServiceImpl) {
         if (existingUsername(password)) {
             throw IllegalArgumentException("Username cannot be password")
         }
+    }
 
-        println(password)
+     fun validatePasswordLogin(password: String?) {
+        if (password.isNullOrEmpty()) {
+            throw IllegalArgumentException("Password is required")
+
+        }
+         println("ooooo")
+    }
+
+     suspend fun validateUsernameLogin(username: String?) {
+         println(username)
+        if (username.isNullOrEmpty()) {
+            throw IllegalArgumentException("Username is required")
+        }
+        if (!existingUsername(username)) {
+            throw IllegalArgumentException("Invalid credentials")
+        }
+
     }
 
     companion object {
@@ -71,6 +94,16 @@ class UserMiddleware(private val userService: UserServiceImpl) {
             userMiddleware.validateUsername(request.username)
             userMiddleware.validateEmail(request.email)
             userMiddleware.validatePassword(request.password)
+        }
+
+        suspend fun validateUserLogin(request: LoginRequestDto, userMiddleware: UserMiddleware) {
+            println("uwu")
+
+            userMiddleware.validateUsernameLogin(request.username)
+            userMiddleware.validatePasswordLogin(request.password)
+        }
+        suspend fun imprimir() {
+            println("uwu")
         }
     }
 }
