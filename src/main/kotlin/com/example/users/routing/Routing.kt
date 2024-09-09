@@ -5,10 +5,14 @@ import com.example.commons.validation.HttpValidationHelper
 import com.example.users.commands.CreateUserCommand
 import com.example.users.domain.models.User
 import com.example.users.dtos.requests.AddRequestDto
+import com.example.users.dtos.requests.LoginRequestDto
 import com.example.users.dtos.requests.SendEmailRequestDto
 import com.example.users.dtos.responses.UserResponseDto
 import com.example.users.middlewares.UserMiddleware
 import com.example.users.middlewares.UserMiddleware.Companion.validateUser
+import com.example.users.middlewares.UserMiddleware.Companion.validateUserLogin
+import com.example.users.middlewares.UserMiddleware.Companion.imprimir
+
 import com.example.users.repositories.implementation.UserRepository
 import com.example.users.services.implementations.UserServiceImpl
 import io.ktor.http.*
@@ -34,8 +38,33 @@ fun Application.configureUsersRoutes(args: Array<String>) {
     val env = commandLineEnvironment(args)
     val appConfig = env.config
 
+    val audience = appConfig.property("ktor.deployment.jwtAudience").getString()
+    val secret = appConfig.property("ktor.deployment.jwtSecret").getString()
+    val jwtDomain = appConfig.property("ktor.deployment.jwtDomain").getString()
+
     routing {
         route("/api/v1/users") {
+            post("/auth/login") {
+                try {
+                    val request = call.receive<LoginRequestDto>()
+
+                    validateUserLogin(request, userMiddleware)
+
+
+                    call.respond(HttpStatusCode.OK, request)
+
+//                    call.respond(
+//                        HttpStatusCode.OK,
+//                        "ij"
+////                        UserResponseDto("success", "You're logged in", ResDataDto.Single(null))
+//                    )
+
+                } catch (e: BadRequestException) {
+                    call.respond(HttpStatusCode.BadRequest, "Invalid request payload")
+                } catch (err: Exception) {
+                    call.respond(HttpStatusCode.InternalServerError, "An unexpected error occurred")
+                }
+            }
             post("/store") {
                 try {
                     val request = call.receive<AddRequestDto>()
