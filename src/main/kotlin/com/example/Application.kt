@@ -29,5 +29,5 @@ fun Application.module(args: Array<String>) {
     configureDatabase.init()
     configureHTTP()
     configureSecurity(args)
-    configureRouting()
+    configureRouting(args)
 }
