@@ -54,6 +54,8 @@ fun Application.configureUsersRoutes() {
                         UserResponseDto("success", "User was created", ResDataDto.Single(user))
                     )
 
+                } catch (e: BadRequestException) {
+                    call.respond(HttpStatusCode.BadRequest, "Invalid request payload")
                 } catch (e: IllegalArgumentException) {
                     HttpValidationHelper.responseError(call, e.message ?: "Invalid data")
                 } catch (e: NullPointerException) {
