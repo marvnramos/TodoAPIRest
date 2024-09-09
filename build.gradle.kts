@@ -24,6 +24,8 @@ repositories {
 }
 
 dependencies {
+    implementation("com.sun.mail:jakarta.mail:2.0.1")
+
     implementation("org.mindrot:jbcrypt:0.4")
     implementation("io.ktor:ktor-server-core-jvm")
     implementation("io.ktor:ktor-server-content-negotiation-jvm")
