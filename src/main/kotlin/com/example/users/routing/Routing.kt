@@ -2,6 +2,7 @@ package com.example.users.routing
 
 import com.example.commons.dtos.ResDataDto
 import com.example.commons.validation.HttpValidationHelper
+import com.example.users.commands.CreateUserCommand
 import com.example.users.domain.models.User
 import com.example.users.dtos.requests.AddRequestDto
 import com.example.users.dtos.responses.UserResponseDto
@@ -14,6 +15,7 @@ import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import org.mindrot.jbcrypt.BCrypt
 import java.time.Instant
 
 fun Application.configureUsersRoutes() {
@@ -29,14 +31,23 @@ fun Application.configureUsersRoutes() {
 
                     validateUser(request, userMiddleware)
 
+                    val hashPassword = BCrypt.hashpw(request.password, BCrypt.gensalt())
                     val user = User(
                         username = request.username!!,
                         email = request.email!!,
                         profilePhoto = request.profilePhoto ?: "https://example.com/photo.jpg",
-                        password = request.password!!,
+                        password = hashPassword,
                         createdAt = Instant.now(),
                         updatedAt = Instant.now()
                     )
+
+                    val command = CreateUserCommand(
+                        username = user.username,
+                        email = user.email,
+                        profilePhoto = user.profilePhoto,
+                        password = user.password,
+                    )
+                    userService.createUser(command)
 
                     call.respond(
                         HttpStatusCode.OK,
@@ -45,6 +56,11 @@ fun Application.configureUsersRoutes() {
 
                 } catch (e: IllegalArgumentException) {
                     HttpValidationHelper.responseError(call, e.message ?: "Invalid data")
+                } catch (e: NullPointerException) {
+                    call.respond(
+                        HttpStatusCode.InternalServerError,
+                        "A null value was encountered \n error: ${e.message}"
+                    )
                 } catch (err: Exception) {
                     println("Something went wrong: $err")
                     call.respond(HttpStatusCode.InternalServerError, "An error occurred")
