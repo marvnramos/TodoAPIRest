@@ -31,6 +31,8 @@ import org.mindrot.jbcrypt.BCrypt
 import java.time.Instant
 import java.util.*
 import com.auth0.jwt.algorithms.Algorithm
+import com.example.users.dtos.requests.RefreshRequestDto
+import com.example.users.middlewares.UserMiddleware.Companion.validateRefresh
 
 
 import  com.auth0.jwt.JWT as jwt
@@ -93,6 +95,35 @@ fun Application.configureUsersRoutes(args: Array<String>) {
                     call.respond(HttpStatusCode.BadRequest, "Invalid request payload")
                 } catch (err: Exception) {
                     call.respond(HttpStatusCode.InternalServerError, "An unexpected error occurred")
+                }
+            }
+            post("/auth/refresh") {
+                try {
+                    val request = call.receive<RefreshRequestDto>()
+                    validateRefresh(request)
+
+                    val decodedJWT = jwt.require(Algorithm.HMAC256(secret))
+                        .withIssuer(jwtDomain)
+                        .build()
+                        .verify(request.refreshToken)
+
+                    if (decodedJWT == null) {
+                        throw IllegalArgumentException("Invalid refresh token")
+                    }
+
+                    val currentTimestamp = Date()
+                    if (decodedJWT.expiresAt == null || currentTimestamp.after(decodedJWT.expiresAt)) {
+                        throw IllegalArgumentException("Expired refresh token")
+                    }
+
+                    call.respond(HttpStatusCode.OK, "Token is still valid")
+
+                } catch (e: IllegalArgumentException) {
+                    HttpValidationHelper.responseError(call, e.message ?: "Invalid data")
+                } catch (e: BadRequestException) {
+                    HttpValidationHelper.responseError(call, e.message ?: "Invalid data")
+                } catch (err: Exception) {
+                    call.respond(HttpStatusCode.InternalServerError, "An error occurred")
                 }
             }
 
