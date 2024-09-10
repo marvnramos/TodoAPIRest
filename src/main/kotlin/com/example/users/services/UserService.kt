@@ -40,7 +40,7 @@ abstract class UserService(private val userRepository: UserRepository) : IUsersS
         return userRepository.findByEmail(command.email)
     }
 
-    override suspend fun getUserByUsername(command: GetByUsernameCommmand): User? {
+    override suspend fun getUserByUsername(command: GetByUsernameCommand): User? {
         return userRepository.findByUsername(command.username)
     }
 }
