@@ -4,6 +4,7 @@ import com.example.users.commands.GetByEmailCommand
 import com.example.users.commands.GetByUsernameCommand
 import com.example.users.dtos.requests.AddRequestDto
 import com.example.users.dtos.requests.LoginRequestDto
+import com.example.users.dtos.requests.RefreshRequestDto
 import com.example.users.services.implementations.UserServiceImpl
 
 class UserMiddleware(private val userService: UserServiceImpl) {
@@ -79,7 +80,6 @@ class UserMiddleware(private val userService: UserServiceImpl) {
     }
 
     suspend fun validateUsernameLogin(username: String?) {
-        println(username)
         if (username.isNullOrEmpty()) {
             throw IllegalArgumentException("Username is required")
         }
@@ -99,6 +99,13 @@ class UserMiddleware(private val userService: UserServiceImpl) {
         suspend fun validateUserLogin(request: LoginRequestDto, userMiddleware: UserMiddleware) {
             userMiddleware.validateUsernameLogin(request.username)
             userMiddleware.validatePasswordLogin(request.password)
+        }
+
+        fun validateRefresh(request: RefreshRequestDto) {
+            val (refreshToken) = request
+            if (refreshToken.isNullOrEmpty()) {
+                throw IllegalArgumentException("Missing refresh token")
+            }
         }
     }
 }
