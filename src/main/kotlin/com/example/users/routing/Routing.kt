@@ -3,15 +3,17 @@ package com.example.users.routing
 import com.example.commons.dtos.ResDataDto
 import com.example.commons.validation.HttpValidationHelper
 import com.example.users.commands.CreateUserCommand
+import com.example.users.commands.GetByUsernameCommand
+import com.example.users.domain.models.JWT
 import com.example.users.domain.models.User
 import com.example.users.dtos.requests.AddRequestDto
 import com.example.users.dtos.requests.LoginRequestDto
 import com.example.users.dtos.requests.SendEmailRequestDto
+import com.example.users.dtos.responses.LoginResponse
 import com.example.users.dtos.responses.UserResponseDto
 import com.example.users.middlewares.UserMiddleware
 import com.example.users.middlewares.UserMiddleware.Companion.validateUser
 import com.example.users.middlewares.UserMiddleware.Companion.validateUserLogin
-import com.example.users.middlewares.UserMiddleware.Companion.imprimir
 
 import com.example.users.repositories.implementation.UserRepository
 import com.example.users.services.implementations.UserServiceImpl
@@ -28,7 +30,10 @@ import jakarta.mail.internet.MimeMessage
 import org.mindrot.jbcrypt.BCrypt
 import java.time.Instant
 import java.util.*
+import com.auth0.jwt.algorithms.Algorithm
 
+
+import  com.auth0.jwt.JWT as jwt
 
 fun Application.configureUsersRoutes(args: Array<String>) {
     val userRepository = UserRepository()
@@ -50,21 +55,47 @@ fun Application.configureUsersRoutes(args: Array<String>) {
 
                     validateUserLogin(request, userMiddleware)
 
+                    val command = GetByUsernameCommand(request.username)
+                    val user = userService.getUserByUsername(command)
 
-                    call.respond(HttpStatusCode.OK, request)
+                    if (!BCrypt.checkpw(request.password, user?.password)) {
+                        throw IllegalArgumentException("Invalid credentials")
+                    }
 
-//                    call.respond(
-//                        HttpStatusCode.OK,
-//                        "ij"
-////                        UserResponseDto("success", "You're logged in", ResDataDto.Single(null))
-//                    )
+                    val token = jwt.create()
+                        .withSubject("Authentication")
+                        .withAudience(audience)
+                        .withIssuer(jwtDomain)
+                        .withClaim("sub", user?.id.toString())
+                        .withExpiresAt(Date(System.currentTimeMillis() + 3_600_000))
+                        .sign(Algorithm.HMAC256(secret))
 
+                    val refreshToken = jwt.create()
+                        .withSubject("Refresh")
+                        .withIssuer(jwtDomain)
+                        .withClaim("sub", user?.id.toString())
+                        .withExpiresAt(Date(System.currentTimeMillis() + (2.52e+7).toLong()))
+                        .sign(Algorithm.HMAC256(secret))
+
+                    val tokens = JWT(
+                        accessToken = token,
+                        refreshToken = refreshToken
+                    )
+
+                    call.respond(
+                        HttpStatusCode.OK,
+                        LoginResponse("success", "you're logged now", ResDataDto.Single(tokens))
+                    )
+
+                } catch (e: IllegalArgumentException) {
+                    HttpValidationHelper.responseError(call, e.message ?: "Invalid data")
                 } catch (e: BadRequestException) {
                     call.respond(HttpStatusCode.BadRequest, "Invalid request payload")
                 } catch (err: Exception) {
                     call.respond(HttpStatusCode.InternalServerError, "An unexpected error occurred")
                 }
             }
+
             post("/store") {
                 try {
                     val request = call.receive<AddRequestDto>()
