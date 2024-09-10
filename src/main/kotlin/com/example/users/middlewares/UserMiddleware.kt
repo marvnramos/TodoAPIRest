@@ -1,7 +1,7 @@
 package com.example.users.middlewares
 
 import com.example.users.commands.GetByEmailCommand
-import com.example.users.commands.GetByUsernameCommmand
+import com.example.users.commands.GetByUsernameCommand
 import com.example.users.dtos.requests.AddRequestDto
 import com.example.users.dtos.requests.LoginRequestDto
 import com.example.users.services.implementations.UserServiceImpl
@@ -22,7 +22,7 @@ class UserMiddleware(private val userService: UserServiceImpl) {
 
     private suspend fun existingUsername(username: String): Boolean {
         return try {
-            val command = GetByUsernameCommmand(username) // Corrige el nombre de la clase
+            val command = GetByUsernameCommand(username)
             val user = userService.getUserByUsername(command)
             user != null
         } catch (e: Exception) {
@@ -30,6 +30,7 @@ class UserMiddleware(private val userService: UserServiceImpl) {
             false
         }
     }
+
 
     suspend fun validateEmail(email: String?) {
         if (email.isNullOrEmpty()) {
@@ -70,16 +71,15 @@ class UserMiddleware(private val userService: UserServiceImpl) {
         }
     }
 
-     fun validatePasswordLogin(password: String?) {
+    fun validatePasswordLogin(password: String?) {
         if (password.isNullOrEmpty()) {
             throw IllegalArgumentException("Password is required")
 
         }
-         println("ooooo")
     }
 
-     suspend fun validateUsernameLogin(username: String?) {
-         println(username)
+    suspend fun validateUsernameLogin(username: String?) {
+        println(username)
         if (username.isNullOrEmpty()) {
             throw IllegalArgumentException("Username is required")
         }
@@ -97,13 +97,8 @@ class UserMiddleware(private val userService: UserServiceImpl) {
         }
 
         suspend fun validateUserLogin(request: LoginRequestDto, userMiddleware: UserMiddleware) {
-            println("uwu")
-
             userMiddleware.validateUsernameLogin(request.username)
             userMiddleware.validatePasswordLogin(request.password)
-        }
-        suspend fun imprimir() {
-            println("uwu")
         }
     }
 }
