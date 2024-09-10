@@ -1,6 +1,7 @@
 package com.example.plugins
 
 import com.example.tasks.domain.models.Task
+import com.example.users.domain.models.JWT
 import com.example.users.domain.models.User
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
@@ -15,6 +16,7 @@ val modules = SerializersModule {
     polymorphic(Any::class){
         subclass(Task::class)
         subclass(User::class)
+        subclass(JWT::class)
     }
 }
 
