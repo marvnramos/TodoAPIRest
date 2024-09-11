@@ -1,4 +1,4 @@
-package com.example.users.dtos.requests
+package com.example.auth.dtos.requests
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

@@ -1,9 +1,9 @@
-package com.example.users.dtos.responses
+package com.example.auth.dtos.responses
 
 import ResDataSerializer
 import com.example.commons.dtos.IResponseDto
 import com.example.commons.dtos.ResDataDto
-import com.example.users.domain.models.JWT
+import com.example.auth.domain.models.JWT
 import kotlinx.serialization.Serializable
 
 @Serializable

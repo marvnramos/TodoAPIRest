@@ -1,7 +1,7 @@
 package com.example.plugins
 
 import com.example.tasks.domain.models.Task
-import com.example.users.domain.models.JWT
+import com.example.auth.domain.models.JWT
 import com.example.users.domain.models.User
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
