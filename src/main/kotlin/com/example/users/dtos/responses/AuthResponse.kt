@@ -7,7 +7,7 @@ import com.example.users.domain.models.JWT
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class LoginResponse(
+data class AuthResponse(
     override val status: String,
     override val message: String,
     @Serializable(with = ResDataSerializer::class)
