@@ -10,6 +10,7 @@ import com.example.users.repositories.implementation.UserRepository
 import com.example.users.services.implementations.UserServiceImpl
 import io.ktor.server.config.*
 import org.mindrot.jbcrypt.BCrypt
+
 import java.util.*
 
 abstract class AuthRepository(private val appConfig: ApplicationConfig) : IAuthRepository {
@@ -60,7 +61,14 @@ abstract class AuthRepository(private val appConfig: ApplicationConfig) : IAuthR
         }
     }
 
-    override suspend fun checkPassword(password: String, username: String) {
-        if (!BCrypt.checkpw(password, username)) throw IllegalArgumentException("Invalid credentials")
+    override suspend fun checkPassword(username: String, password: String) {
+        try {
+            val command = GetByUsernameCommand(username)
+            val user = userService.getUserByUsername(command) ?: throw IllegalArgumentException("Invalid credentials")
+
+            if (!BCrypt.checkpw(password, user.password)) throw IllegalArgumentException("Invalid credentials")
+        } catch (e: Exception) {
+            throw Exception("something went wrong")
+        }
     }
 }
