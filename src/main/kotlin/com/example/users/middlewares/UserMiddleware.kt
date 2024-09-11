@@ -3,8 +3,6 @@ package com.example.users.middlewares
 import com.example.users.commands.GetByEmailCommand
 import com.example.users.commands.GetByUsernameCommand
 import com.example.users.dtos.requests.AddRequestDto
-import com.example.users.dtos.requests.LoginRequestDto
-import com.example.users.dtos.requests.RefreshRequestDto
 import com.example.users.services.implementations.UserServiceImpl
 
 class UserMiddleware(private val userService: UserServiceImpl) {
@@ -72,40 +70,11 @@ class UserMiddleware(private val userService: UserServiceImpl) {
         }
     }
 
-    fun validatePasswordLogin(password: String?) {
-        if (password.isNullOrEmpty()) {
-            throw IllegalArgumentException("Password is required")
-
-        }
-    }
-
-    suspend fun validateUsernameLogin(username: String?) {
-        if (username.isNullOrEmpty()) {
-            throw IllegalArgumentException("Username is required")
-        }
-        if (!existingUsername(username)) {
-            throw IllegalArgumentException("Invalid credentials")
-        }
-
-    }
-
     companion object {
         suspend fun validateUser(request: AddRequestDto, userMiddleware: UserMiddleware) {
             userMiddleware.validateUsername(request.username)
             userMiddleware.validateEmail(request.email)
             userMiddleware.validatePassword(request.password)
-        }
-
-        suspend fun validateUserLogin(request: LoginRequestDto, userMiddleware: UserMiddleware) {
-            userMiddleware.validateUsernameLogin(request.username)
-            userMiddleware.validatePasswordLogin(request.password)
-        }
-
-        fun validateRefresh(request: RefreshRequestDto) {
-            val (refreshToken) = request
-            if (refreshToken.isNullOrEmpty()) {
-                throw IllegalArgumentException("Missing refresh token")
-            }
         }
     }
 }
