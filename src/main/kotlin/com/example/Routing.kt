@@ -4,9 +4,9 @@ import com.example.tasks.routing.configureTaskRoutes
 import com.example.users.routing.configureUsersRoutes
 import io.ktor.server.application.*
 
-fun Application.configureRouting() {
+fun Application.configureRouting(args: Array<String>) {
     configureTaskRoutes()
-    configureUsersRoutes()
+    configureUsersRoutes(args)
 //    configureTaskRoutes()
 //    configureUserRoutes()
 //    configureAuthRoutes(args)

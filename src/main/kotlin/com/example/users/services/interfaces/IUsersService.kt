@@ -10,5 +10,6 @@ interface IUsersService {
     suspend fun createUser(command: CreateUserCommand): User?
     suspend fun updateUser(command: UpdateUserCommand): User?
     suspend fun updateUserPassword(command: UpdateUserPasswordCommand): Boolean
-    suspend fun forgotUserPassword(command: ForgotPasswordUserCommand): Boolean
+    suspend fun getUserByEmail(command: GetByEmailCommand): User?
+    suspend fun getUserByUsername(command: GetByUsernameCommand): User?
 }

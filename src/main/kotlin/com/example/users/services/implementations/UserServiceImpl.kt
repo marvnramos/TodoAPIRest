@@ -1,4 +1,6 @@
 package com.example.users.services.implementations
 
-class UserServiceImpl {
-}
+import com.example.users.repositories.implementation.UserRepository
+import com.example.users.services.UserService
+
+class UserServiceImpl(userRepository: UserRepository) : UserService(userRepository)
