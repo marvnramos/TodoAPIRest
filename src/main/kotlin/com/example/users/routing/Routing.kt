@@ -1,20 +1,15 @@
 package com.example.users.routing
 
+
 import com.example.commons.dtos.ResDataDto
 import com.example.commons.validation.HttpValidationHelper
 import com.example.users.commands.CreateUserCommand
-import com.example.users.commands.GetByUsernameCommand
-import com.example.users.domain.models.JWT
 import com.example.users.domain.models.User
 import com.example.users.dtos.requests.AddRequestDto
-import com.example.users.dtos.requests.LoginRequestDto
 import com.example.users.dtos.requests.SendEmailRequestDto
-import com.example.users.dtos.responses.AuthResponse
 import com.example.users.dtos.responses.UserResponseDto
 import com.example.users.middlewares.UserMiddleware
 import com.example.users.middlewares.UserMiddleware.Companion.validateUser
-import com.example.users.middlewares.UserMiddleware.Companion.validateUserLogin
-
 import com.example.users.repositories.implementation.UserRepository
 import com.example.users.services.implementations.UserServiceImpl
 import io.ktor.http.*
@@ -30,14 +25,6 @@ import jakarta.mail.internet.MimeMessage
 import org.mindrot.jbcrypt.BCrypt
 import java.time.Instant
 import java.util.*
-import com.auth0.jwt.algorithms.Algorithm
-import com.auth0.jwt.exceptions.JWTVerificationException
-import com.example.users.dtos.requests.RefreshRequestDto
-import com.example.users.middlewares.UserMiddleware.Companion.validateRefresh
-import com.example.users.routing.exceptions.InvalidTokenException
-
-
-import  com.auth0.jwt.JWT as jwt
 
 fun Application.configureUsersRoutes(args: Array<String>) {
     val userRepository = UserRepository()
@@ -47,107 +34,10 @@ fun Application.configureUsersRoutes(args: Array<String>) {
     val env = commandLineEnvironment(args)
     val appConfig = env.config
 
-    val audience = appConfig.property("ktor.deployment.jwtAudience").getString()
-    val secret = appConfig.property("ktor.deployment.jwtSecret").getString()
-    val jwtDomain = appConfig.property("ktor.deployment.jwtDomain").getString()
-    val jwtAccessExpiration = appConfig.property("ktor.deployment.jwt.expiredAtAccess").getString().toLong()
-    val jwtRefreshExpiration = appConfig.property("ktor.deployment.jwt.expiredAtRefresh").getString().toLong()
-
     routing {
         route("/api/v1/users") {
-            post("/auth/login") {
-                try {
-                    val request = call.receive<LoginRequestDto>()
-
-                    validateUserLogin(request, userMiddleware)
-
-                    val command = GetByUsernameCommand(request.username)
-                    val user = userService.getUserByUsername(command)
-
-                    if (!BCrypt.checkpw(request.password, user?.password)) {
-                        throw IllegalArgumentException("Invalid credentials")
-                    }
-
-                    val token = jwt.create()
-                        .withSubject("Authentication")
-                        .withAudience(audience)
-                        .withIssuer(jwtDomain)
-                        .withClaim("sub", user?.id.toString())
-                        .withExpiresAt(Date(System.currentTimeMillis() + jwtAccessExpiration))
-                        .sign(Algorithm.HMAC256(secret))
-
-                    val refreshToken = jwt.create()
-                        .withSubject("Refresh")
-                        .withIssuer(jwtDomain)
-                        .withClaim("sub", user?.id.toString())
-                        .withExpiresAt(Date(System.currentTimeMillis() + jwtRefreshExpiration)) //(2.52e+7).toLong()
-                        .sign(Algorithm.HMAC256(secret))
-
-                    val tokens = JWT(
-                        accessToken = token,
-                        refreshToken = refreshToken
-                    )
-
-                    call.respond(
-                        HttpStatusCode.OK,
-                        AuthResponse("success", "you're logged now", ResDataDto.Single(tokens))
-                    )
-
-                } catch (e: IllegalArgumentException) {
-                    HttpValidationHelper.responseError(call, e.message ?: "Invalid data")
-                } catch (e: BadRequestException) {
-                    call.respond(HttpStatusCode.BadRequest, "Invalid request payload")
-                } catch (err: Exception) {
-                    call.respond(HttpStatusCode.InternalServerError, "An unexpected error occurred")
-                }
-            }
-            post("/auth/refresh") {
-                try {
-                    val request = call.receive<RefreshRequestDto>()
-                    validateRefresh(request)
 
 
-                    val decodedJWT = try {
-                        jwt.require(Algorithm.HMAC256(secret))
-                            .withIssuer(jwtDomain)
-                            .build()
-                            .verify(request.refreshToken)
-                    } catch (e: JWTVerificationException) {
-                        throw InvalidTokenException("Invalid or expired refresh token")
-                    }
-
-                    val newAccessToken = jwt.create()
-                        .withSubject("Authentication")
-                        .withIssuer(jwtDomain)
-                        .withExpiresAt(Date(System.currentTimeMillis() + jwtAccessExpiration))
-                        .sign(Algorithm.HMAC256(secret))
-
-                    val newRefreshToken = jwt.create()
-                        .withSubject(decodedJWT.subject)
-                        .withIssuer(jwtDomain)
-                        .withExpiresAt(Date(System.currentTimeMillis() + jwtRefreshExpiration))
-                        .sign(Algorithm.HMAC256(secret))
-
-                    val tokens = JWT(
-                        accessToken = newAccessToken,
-                        refreshToken = newRefreshToken
-                    )
-
-                    call.respond(
-                        HttpStatusCode.OK,
-                        AuthResponse("success", "session refreshed", ResDataDto.Single(tokens))
-                    )
-
-                } catch (e: InvalidTokenException) {
-                    call.respond(HttpStatusCode.Unauthorized, "${e.message}")
-                } catch (e: IllegalArgumentException) {
-                    HttpValidationHelper.responseError(call, e.message ?: "Invalid data")
-                } catch (e: BadRequestException) {
-                    HttpValidationHelper.responseError(call, e.message ?: "Invalid data")
-                } catch (err: Exception) {
-                    call.respond(HttpStatusCode.InternalServerError, "An error occurred")
-                }
-            }
 
             post("/store") {
                 try {
