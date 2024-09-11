@@ -9,6 +9,6 @@ import com.example.auth.commands.TokenValidationCommand
 interface IAuthService {
     suspend fun generateToken(command: CreateAccessTokenCommand): String
     suspend fun generateRefreshToken(command: CreateRefreshTokenCommand): String
-    suspend fun checkUserPassword(command: PasswordCheckCommand): Boolean
+    suspend fun checkUserPassword(command: PasswordCheckCommand)
     suspend fun validateRefreshToken(command: TokenValidationCommand): DecodedJWT
 }
