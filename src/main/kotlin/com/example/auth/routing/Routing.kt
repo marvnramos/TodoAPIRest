@@ -1,9 +1,12 @@
 package com.example.auth.routing
 
+import com.auth0.jwt.exceptions.JWTVerificationException
 import com.example.auth.commands.CreateAccessTokenCommand
 import com.example.auth.commands.CreateRefreshTokenCommand
 import com.example.auth.commands.PasswordCheckCommand
+import com.example.auth.commands.TokenValidationCommand
 import com.example.auth.dtos.requests.LoginRequestDto
+import com.example.auth.dtos.requests.RefreshRequestDto
 import com.example.auth.dtos.responses.AuthResponse
 import com.example.auth.repositories.implementation.AuthRepositoryImpl
 import com.example.auth.services.implementations.AuthServiceImpl
@@ -58,15 +61,19 @@ fun Application.configureAuthRoutes(args: Array<String>) {
                 } catch (e: BadRequestException) {
                     call.respond(HttpStatusCode.BadRequest, "Invalid request payload")
                 } catch (err: Exception) {
-                    call.respond(HttpStatusCode.InternalServerError, err.message ?:"An unexpected error occurred")
+                    call.respond(HttpStatusCode.InternalServerError, err.message ?: "An unexpected error occurred")
                 }
             }
-//            post("/auth/refresh") {
-//                try {
-//                    val request = call.receive<RefreshRequestDto>()
+            post("/auth/refresh") {
+                try {
+                    val request = call.receive<RefreshRequestDto>()
+//                    TODO:
 //                    validateRefresh(request)
-//
-//
+
+                    val command = TokenValidationCommand(request.refreshToken)
+                    val decodedJWT = authService.validateRefreshToken(command)
+
+
 //                    val decodedJWT = try {
 //                        JWT.require(Algorithm.HMAC256(secret))
 //                            .withIssuer(jwtDomain)
@@ -98,17 +105,16 @@ fun Application.configureAuthRoutes(args: Array<String>) {
 //                        AuthResponse("success", "session refreshed", ResDataDto.Single(tokens))
 //                    )
 //
-//                } catch (e: InvalidTokenException) {
-//                    call.respond(HttpStatusCode.Unauthorized, "${e.message}")
-//                } catch (e: IllegalArgumentException) {
-//                    HttpValidationHelper.responseError(call, e.message ?: "Invalid data")
-//                } catch (e: BadRequestException) {
-//                    HttpValidationHelper.responseError(call, e.message ?: "Invalid data")
-//                } catch (err: Exception) {
-//                    call.respond(HttpStatusCode.InternalServerError, "An error occurred")
-//                }
-//            }
+                } catch (e: JWTVerificationException) {
+                    call.respond(HttpStatusCode.Unauthorized, "${e.message}")
+                } catch (e: IllegalArgumentException) {
+                    HttpValidationHelper.responseError(call, e.message ?: "Invalid data")
+                } catch (e: BadRequestException) {
+                    HttpValidationHelper.responseError(call, e.message ?: "Invalid data")
+                } catch (err: Exception) {
+                    call.respond(HttpStatusCode.InternalServerError, "An error occurred")
+                }
+            }
         }
     }
-
 }
