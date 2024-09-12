@@ -1,37 +1,23 @@
 package com.example.auth.middlewares
 
-import com.example.users.middlewares.UserMiddleware
+import com.example.auth.dtos.requests.LoginRequestDto
+import com.example.users.commands.GetByUsernameCommand
+import com.example.users.services.implementations.UserServiceImpl
 
-class AuthMiddleware {
-//    suspend fun validateUsernameLogin(username: String?) {
-//        if (username.isNullOrEmpty()) {
-//            throw IllegalArgumentException("Username is required")
-//        }
-//        if (!existingUsername(username)) {
-//            throw IllegalArgumentException("Invalid credentials")
-//        }
-//
-//    }
-//
-//    fun validatePasswordLogin(password: String?) {
-//        if (password.isNullOrEmpty()) {
-//            throw IllegalArgumentException("Password is required")
-//
-//        }
-//    }
-//
-//    companion object {
-//
-//        suspend fun validateUserLogin(request: LoginRequestDto, userMiddleware: UserMiddleware) {
-//            userMiddleware.validateUsernameLogin(request.username)
-//            userMiddleware.validatePasswordLogin(request.password)
-//        }
-//
-//        fun validateRefresh(request: RefreshRequestDto) {
-//            val (refreshToken) = request
-//            if (refreshToken.isNullOrEmpty()) {
-//                throw IllegalArgumentException("Missing refresh token")
-//            }
-//        }
-//    }
+class AuthMiddleware(private val userService: UserServiceImpl) {
+    private suspend fun isValidCredentials(request: LoginRequestDto) {
+        val command = GetByUsernameCommand(request.username)
+        val user = userService.getUserByUsername(command)
+
+        if (request.username.isEmpty()) throw IllegalArgumentException("Username should not be empty")
+        if (request.password.isEmpty()) throw IllegalArgumentException("Password should not be empty")
+
+        if (user == null) throw IllegalArgumentException("Invalid credentials")
+    }
+
+    companion object {
+        suspend fun validateAuthentication(request: LoginRequestDto, authMiddleware: AuthMiddleware) {
+            authMiddleware.isValidCredentials(request)
+        }
+    }
 }
