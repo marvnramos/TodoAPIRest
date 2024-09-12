@@ -1,6 +1,7 @@
 package com.example.auth.middlewares
 
 import com.example.auth.dtos.requests.LoginRequestDto
+import com.example.auth.dtos.requests.RefreshRequestDto
 import com.example.users.commands.GetByUsernameCommand
 import com.example.users.services.implementations.UserServiceImpl
 
@@ -15,9 +16,18 @@ class AuthMiddleware(private val userService: UserServiceImpl) {
         if (user == null) throw IllegalArgumentException("Invalid credentials")
     }
 
+    private fun refreshValidation(request: RefreshRequestDto) {
+        if (request.refreshToken.isEmpty()) throw IllegalArgumentException("Refresh token should not be empty")
+    }
+
     companion object {
         suspend fun validateAuthentication(request: LoginRequestDto, authMiddleware: AuthMiddleware) {
             authMiddleware.isValidCredentials(request)
         }
+
+        fun validateRefresh(request: RefreshRequestDto, authMiddleware: AuthMiddleware) {
+            authMiddleware.refreshValidation(request)
+        }
+
     }
 }
