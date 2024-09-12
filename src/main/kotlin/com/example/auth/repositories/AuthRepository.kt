@@ -13,7 +13,7 @@ import org.mindrot.jbcrypt.BCrypt
 
 import java.util.*
 
-abstract class AuthRepository(private val appConfig: ApplicationConfig) : IAuthRepository {
+abstract class AuthRepository(appConfig: ApplicationConfig) : IAuthRepository {
     private val userRepository = UserRepository()
     private val userService = UserServiceImpl(userRepository)
 
@@ -30,8 +30,9 @@ abstract class AuthRepository(private val appConfig: ApplicationConfig) : IAuthR
 
         return jwt.create()
             .withSubject("Refresh")
-            .withIssuer(appConfig.property("ktor.deployment.jwtSecret").getString())
+            .withIssuer(jwtDomain)
             .withClaim("sub", user?.id.toString())
+            .withClaim("username", user?.username)
             .withExpiresAt(Date(System.currentTimeMillis() + jwtRefreshExpiration))
             .sign(Algorithm.HMAC256(secret))
     }
@@ -43,7 +44,7 @@ abstract class AuthRepository(private val appConfig: ApplicationConfig) : IAuthR
         return jwt.create()
             .withSubject("Authentication")
             .withAudience(audience)
-            .withIssuer(appConfig.property("ktor.deployment.jwtSecret").getString())
+            .withIssuer(jwtDomain)
             .withClaim("sub", user?.id.toString())
             .withClaim("username", user?.username)
             .withExpiresAt(Date(System.currentTimeMillis() + jwtAccessExpiration))
