@@ -8,10 +8,14 @@ import com.example.auth.commands.TokenValidationCommand
 import com.example.auth.dtos.requests.LoginRequestDto
 import com.example.auth.dtos.requests.RefreshRequestDto
 import com.example.auth.dtos.responses.AuthResponse
+import com.example.auth.middlewares.AuthMiddleware
+import com.example.auth.middlewares.AuthMiddleware.Companion.validateAuthentication
 import com.example.auth.repositories.implementation.AuthRepositoryImpl
 import com.example.auth.services.implementations.AuthServiceImpl
 import com.example.commons.dtos.ResDataDto
 import com.example.commons.validation.HttpValidationHelper
+import com.example.users.repositories.implementation.UserRepository
+import com.example.users.services.implementations.UserServiceImpl
 import com.example.auth.domain.models.JWT as jwt
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -28,6 +32,11 @@ fun Application.configureAuthRoutes(args: Array<String>) {
     val authRepo = AuthRepositoryImpl(appConfig)
     val authService = AuthServiceImpl(authRepo)
 
+    val userRepository = UserRepository()
+    val userService = UserServiceImpl(userRepository)
+
+    val authMiddleware = AuthMiddleware(userService)
+
     routing {
         route("/api/v1/auth") {
             post("/login") {
@@ -35,7 +44,7 @@ fun Application.configureAuthRoutes(args: Array<String>) {
                     val request = call.receive<LoginRequestDto>()
                     val (username, password) = request
 
-//                    TODO(/*validateUserLogin(request, userMiddleware)*/)
+                    validateAuthentication(request, authMiddleware)
                     val command = PasswordCheckCommand(username, password)
                     authService.checkUserPassword(command)
 
@@ -64,7 +73,7 @@ fun Application.configureAuthRoutes(args: Array<String>) {
                     call.respond(HttpStatusCode.InternalServerError, err.message ?: "An unexpected error occurred")
                 }
             }
-            post("/auth/refresh") {
+            post("/refresh") {
                 try {
                     val request = call.receive<RefreshRequestDto>()
 //                    TODO:
@@ -72,39 +81,24 @@ fun Application.configureAuthRoutes(args: Array<String>) {
 
                     val command = TokenValidationCommand(request.refreshToken)
                     val decodedJWT = authService.validateRefreshToken(command)
+                    val username = decodedJWT.claims["username"]?.asString()
+
+                    val accessTokenCommand = CreateAccessTokenCommand(username!!)
+                    val newAccessToken = authService.generateToken(accessTokenCommand)
 
 
-//                    val decodedJWT = try {
-//                        JWT.require(Algorithm.HMAC256(secret))
-//                            .withIssuer(jwtDomain)
-//                            .build()
-//                            .verify(request.refreshToken)
-//                    } catch (e: JWTVerificationException) {
-//                        throw InvalidTokenException("Invalid or expired refresh token")
-//                    }
-//
-//                    val newAccessToken = JWT.create()
-//                        .withSubject("Authentication")
-//                        .withIssuer(jwtDomain)
-//                        .withExpiresAt(Date(System.currentTimeMillis() + jwtAccessExpiration))
-//                        .sign(Algorithm.HMAC256(secret))
-//
-//                    val newRefreshToken = JWT.create()
-//                        .withSubject(decodedJWT.subject)
-//                        .withIssuer(jwtDomain)
-//                        .withExpiresAt(Date(System.currentTimeMillis() + jwtRefreshExpiration))
-//                        .sign(Algorithm.HMAC256(secret))
-//
-//                    val tokens = com.example.auth.domain.models.JWT(
-//                        accessToken = newAccessToken,
-//                        refreshToken = newRefreshToken
-//                    )
-//
-//                    call.respond(
-//                        HttpStatusCode.OK,
-//                        AuthResponse("success", "session refreshed", ResDataDto.Single(tokens))
-//                    )
-//
+                    val refreshTokenCommand = CreateRefreshTokenCommand(username)
+                    val newRefreshToken = authService.generateRefreshToken(refreshTokenCommand)
+
+                    val tokens = jwt(
+                        accessToken = newAccessToken,
+                        refreshToken = newRefreshToken
+                    )
+
+                    call.respond(
+                        HttpStatusCode.OK,
+                        AuthResponse("success", "session refreshed", ResDataDto.Single(tokens))
+                    )
                 } catch (e: JWTVerificationException) {
                     call.respond(HttpStatusCode.Unauthorized, "${e.message}")
                 } catch (e: IllegalArgumentException) {
