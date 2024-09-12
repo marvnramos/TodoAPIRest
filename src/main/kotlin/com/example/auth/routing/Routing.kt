@@ -10,6 +10,7 @@ import com.example.auth.dtos.requests.RefreshRequestDto
 import com.example.auth.dtos.responses.AuthResponse
 import com.example.auth.middlewares.AuthMiddleware
 import com.example.auth.middlewares.AuthMiddleware.Companion.validateAuthentication
+import com.example.auth.middlewares.AuthMiddleware.Companion.validateRefresh
 import com.example.auth.repositories.implementation.AuthRepositoryImpl
 import com.example.auth.services.implementations.AuthServiceImpl
 import com.example.commons.dtos.ResDataDto
@@ -76,8 +77,8 @@ fun Application.configureAuthRoutes(args: Array<String>) {
             post("/refresh") {
                 try {
                     val request = call.receive<RefreshRequestDto>()
-//                    TODO:
-//                    validateRefresh(request)
+
+                    validateRefresh(request, authMiddleware) // fix
 
                     val command = TokenValidationCommand(request.refreshToken)
                     val decodedJWT = authService.validateRefreshToken(command)
@@ -99,11 +100,11 @@ fun Application.configureAuthRoutes(args: Array<String>) {
                         HttpStatusCode.OK,
                         AuthResponse("success", "session refreshed", ResDataDto.Single(tokens))
                     )
+                } catch (e: BadRequestException) {
+                    HttpValidationHelper.responseError(call, e.message ?: "Invalid data")
                 } catch (e: JWTVerificationException) {
                     call.respond(HttpStatusCode.Unauthorized, "${e.message}")
                 } catch (e: IllegalArgumentException) {
-                    HttpValidationHelper.responseError(call, e.message ?: "Invalid data")
-                } catch (e: BadRequestException) {
                     HttpValidationHelper.responseError(call, e.message ?: "Invalid data")
                 } catch (err: Exception) {
                     call.respond(HttpStatusCode.InternalServerError, "An error occurred")
