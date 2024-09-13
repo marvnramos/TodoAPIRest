@@ -101,7 +101,7 @@ fun Application.configureAuthRoutes(args: Array<String>) {
                         AuthResponse("success", "session refreshed", ResDataDto.Single(tokens))
                     )
                 } catch (e: BadRequestException) {
-                    HttpValidationHelper.responseError(call, e.message ?: "Invalid data")
+                    HttpValidationHelper.responseError(call, "Invalid request payload")
                 } catch (e: JWTVerificationException) {
                     call.respond(HttpStatusCode.Unauthorized, "${e.message}")
                 } catch (e: IllegalArgumentException) {
