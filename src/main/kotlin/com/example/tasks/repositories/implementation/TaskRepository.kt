@@ -54,6 +54,7 @@ class TaskRepository : ITaskRepository {
         id = row[Tasks.id],
         title = row[Tasks.title],
         description = row[Tasks.description],
+        priority = row[Tasks.priority],
         status = row[Tasks.status],
         dueDate = row[Tasks.dueDate],
         createdBy = row[Tasks.createdBy],
@@ -65,6 +66,7 @@ class TaskRepository : ITaskRepository {
         statement[Tasks.title] = entity.title
         statement[Tasks.description] = entity.description ?: return
         statement[Tasks.status] = entity.status
+        statement[Tasks.priority] = entity.priority
         statement[Tasks.dueDate] = entity.dueDate
         statement[Tasks.createdBy] = entity.createdBy!!
         statement[Tasks.updatedAt] = entity.updatedAt ?: Instant.now()
