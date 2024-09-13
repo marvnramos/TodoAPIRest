@@ -5,6 +5,7 @@ import com.example.commons.validation.HttpValidationHelper
 import com.example.tasks.commands.CreateTaskCommand
 import com.example.tasks.commands.GetTasksCommand
 import com.example.tasks.dtos.requests.AddRequestDto
+import com.example.tasks.dtos.requests.AddSharedWithDto
 import com.example.tasks.dtos.responses.TaskResponseDto
 import com.example.tasks.middlewares.TaskMiddleware
 import com.example.tasks.middlewares.TaskMiddleware.Companion.taskValidator
@@ -59,7 +60,19 @@ fun Application.configureTaskRoutes() {
                     } catch (e: IllegalArgumentException) {
                         HttpValidationHelper.responseError(call, e.message ?: "Invalid data")
                     } catch (e: BadRequestException) {
-                        HttpValidationHelper.responseError(call, "Invalid request payload")
+                        when{
+                            call.receive<AddSharedWithDto>().toString().isNullOrEmpty() -> {
+                                HttpValidationHelper.responseError(call, "Invalid request payload")
+                            }
+                            else -> {
+                                call.respond(HttpStatusCode.OK, "uwu")
+                            }
+                        }
+//                        val request = call.receive<AddSharedWithDto>()
+//                        if(request.sharedWith == null) {
+//                            HttpValidationHelper.responseError(call, "Invalid request payload")
+//                        }
+//                        HttpValidationHelper.responseError(call, "Invalid request payload")
                     } catch (e: CannotTransformContentToTypeException) {
                         HttpValidationHelper.responseError(call, "Request payload required!")
                     } catch (error: Exception) {
