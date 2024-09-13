@@ -1,19 +1,18 @@
 package com.example.tasks.dtos.requests
 
 import com.example.commons.serializers.InstantSerializer
-import com.example.commons.serializers.UUIDSerializer
+import com.example.tasks.domain.Priority
 import com.example.tasks.domain.Status
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import java.time.Instant
-import java.util.UUID
 
 @Serializable
 data class AddRequestDto(
     val title: String,
-    val description: String,
+    val description: String?,
     @Serializable(with = InstantSerializer::class)
-    val dueDate: Instant,
-    val status: Status? = Status.TODO,
-    @Serializable(with = UUIDSerializer::class)
-    val createdBy: UUID,
+    @SerialName("due_date") val dueDate: Instant?,
+    val status: Status?,
+    val priority: Priority?,
 )
