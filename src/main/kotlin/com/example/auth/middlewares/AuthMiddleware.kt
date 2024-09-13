@@ -17,7 +17,9 @@ class AuthMiddleware(private val userService: UserServiceImpl) {
     }
 
     private fun refreshValidation(request: RefreshRequestDto) {
-        if (request.refreshToken.isEmpty()) throw IllegalArgumentException("Refresh token should not be empty")
+        if (request.refreshToken.isNullOrEmpty()) {
+            throw IllegalArgumentException("Refresh token should not be empty")
+        }
     }
 
     companion object {
