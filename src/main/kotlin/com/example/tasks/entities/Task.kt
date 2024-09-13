@@ -1,5 +1,6 @@
 package com.example.tasks.entities
 
+import com.example.tasks.domain.Priority
 import com.example.tasks.domain.Status
 import com.example.users.entities.Users
 import org.jetbrains.exposed.sql.Table
@@ -10,7 +11,8 @@ object Tasks : Table() {
     val title = varchar("title", 25)
     val description = text("description").nullable()
     val status = enumerationByName("status", 10, Status::class).default(Status.TODO).nullable()
-    val dueDate = timestamp("due_date")
+    val priority = enumerationByName("priority", 15, Priority::class).default(Priority.LOW).nullable()
+    val dueDate = timestamp("due_date").nullable()
     val createdBy = uuid("created_by").references(Users.id)
     val createdAt = timestamp("created_at")
     val updatedAt = timestamp("updated_at")
