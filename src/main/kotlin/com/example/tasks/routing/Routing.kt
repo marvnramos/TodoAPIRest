@@ -1,83 +1,84 @@
 package com.example.tasks.routing
 
 import com.example.commons.dtos.ResDataDto
+import com.example.commons.validation.HttpValidationHelper
 import com.example.tasks.commands.CreateTaskCommand
 import com.example.tasks.commands.GetTasksCommand
 import com.example.tasks.dtos.requests.AddRequestDto
 import com.example.tasks.dtos.responses.TaskResponseDto
+import com.example.tasks.middlewares.TaskMiddleware
+import com.example.tasks.middlewares.TaskMiddleware.Companion.taskValidator
 import com.example.tasks.repositories.implementation.TaskRepository
 import com.example.tasks.services.TasksServiceImpl
-import io.ktor.server.application.*
-import io.ktor.server.routing.*
 import io.ktor.http.*
+import io.ktor.server.application.*
+import io.ktor.server.auth.*
+import io.ktor.server.auth.jwt.*
+import io.ktor.server.plugins.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
+import io.ktor.server.routing.*
 import java.util.*
 
 fun Application.configureTaskRoutes() {
     val taskRepository = TaskRepository()
     val taskService = TasksServiceImpl(taskRepository)
+    val taskMiddleware = TaskMiddleware()
     routing {
         get("/hello") {
             call.respond(HttpStatusCode.OK, "hello")
         }
+        authenticate("auth-jwt") {
+            route("/api/v1") {
+                post("/tasks/store") {
+                    try {
+                        val principal = call.principal<JWTPrincipal>()
+                        val payload = principal?.payload
+                        val userId = UUID.fromString(payload?.getClaim("sub")?.asString())
 
-        route("/api/v1") {
-            post("/tasks/store") {
-                try {
-                    val request = call.receive<AddRequestDto>()
-                    if (request.title.isBlank()) {
-                        call.respond(HttpStatusCode.BadRequest, "Title is required")
-                        return@post
+                        val request = call.receive<AddRequestDto>()
+                        taskValidator(request, taskMiddleware)
+
+                        val command = CreateTaskCommand(
+                            title = request.title,
+                            description = request.description!!,
+                            dueDate = request.dueDate!!,
+                            status = request.status!!,
+                            priority = request.priority!!,
+                            createdBy = userId
+                        )
+
+                        val task = taskService.createTask(command)
+                        val response = TaskResponseDto(
+                            "success",
+                            "Task created successfully",
+                            ResDataDto.Single(task!!)
+                        )
+
+                        call.respond(HttpStatusCode.OK, response)
+                    } catch (e: IllegalArgumentException) {
+                        HttpValidationHelper.responseError(call, e.message ?: "Invalid data")
+                    } catch (e: BadRequestException) {
+                        HttpValidationHelper.responseError(call, "Invalid request payload")
+                    } catch (e: CannotTransformContentToTypeException) {
+                        HttpValidationHelper.responseError(call, "Request payload required!")
+                    } catch (error: Exception) {
+                        println(error)
+                        call.respond(HttpStatusCode.InternalServerError, "An error occurred :/")
                     }
-//                    if(request.description.isBlank()){
-//                        call.respond(HttpStatusCode.BadRequest, "Description is required")
-//                        return@post
-                    // description could be nullable
-//                    }
-                    if (request.dueDate.toString().isBlank()) {
-                        call.respond(HttpStatusCode.BadRequest, "Due date is required")
-                        return@post
-                    }
-
-                    if (request.createdBy.toString().isBlank()) {
-                        TODO("get user id by auth token")
-                    }
-
-                    val command = CreateTaskCommand(
-                        title = request.title,
-                        description = request.description,
-                        dueDate = request.dueDate,
-                        status = request.status!!,
-                        createdBy = UUID.randomUUID()
-                    )
-
-                    val task = taskService.createTask(command)
-
-
-//                val command: CreateTaskCommand
-//                val response = TaskResponseDto(
-//                    "mi titulo",
-//                    "mi descripción 123",
-//
-//
-//                )
-                } catch (error: Exception) {
-                    println(error)
-                    call.respond(HttpStatusCode.InternalServerError, "An error occurred :/")
                 }
-            }
-            get("/tasks") {
-                val command = GetTasksCommand()
+                get("/tasks") {
+                    val command = GetTasksCommand()
 
-                val tasks = taskService.getTasks(command)
+                    val tasks = taskService.getTasks(command)
 
-                val response = TaskResponseDto(
-                    status = "success",
-                    message = "here are all task!",
-                    data = ResDataDto.Multiple(tasks)
-                )
-                call.respond(HttpStatusCode.OK, response)
+                    val response = TaskResponseDto(
+                        status = "success",
+                        message = "here are all task!",
+                        data = ResDataDto.Multiple(tasks)
+                    )
+                    call.respond(HttpStatusCode.OK, response)
+                }
             }
         }
     }
