@@ -10,7 +10,7 @@ import com.example.tasks.dtos.responses.TaskResponseDto
 import com.example.tasks.middlewares.TaskMiddleware
 import com.example.tasks.middlewares.TaskMiddleware.Companion.taskValidator
 import com.example.tasks.repositories.implementation.TaskRepository
-import com.example.tasks.services.TasksServiceImpl
+import com.example.tasks.services.implementations.TasksServiceImpl
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -40,6 +40,35 @@ fun Application.configureTaskRoutes() {
                         val request = call.receive<AddRequestDto>()
                         taskValidator(request, taskMiddleware)
 
+
+                        val sharedRequest = if (request.sharedWith != null) {
+                            request.toAddSharedWithDto()
+                        } else null
+
+
+                        if (sharedRequest?.sharedWith != null) {
+                            val command = CreateTaskCommand(
+                                title = sharedRequest.title,
+                                description = sharedRequest.description!!,
+                                dueDate = sharedRequest.dueDate!!,
+                                status = sharedRequest.status!!,
+                                priority = sharedRequest.priority!!,
+                                createdBy = userId
+                            )
+
+                            val task = taskService.createTask(command)
+
+
+                            val response = TaskResponseDto(
+                                "success",
+                                "Task created successfully",
+                                ResDataDto.Single(task!!)
+                            )
+
+                            call.respond(HttpStatusCode.OK, response)
+                            return@post
+                        }
+
                         val command = CreateTaskCommand(
                             title = request.title,
                             description = request.description!!,
@@ -60,10 +89,11 @@ fun Application.configureTaskRoutes() {
                     } catch (e: IllegalArgumentException) {
                         HttpValidationHelper.responseError(call, e.message ?: "Invalid data")
                     } catch (e: BadRequestException) {
-                        when{
+                        when {
                             call.receive<AddSharedWithDto>().toString().isNullOrEmpty() -> {
                                 HttpValidationHelper.responseError(call, "Invalid request payload")
                             }
+
                             else -> {
                                 call.respond(HttpStatusCode.OK, "uwu")
                             }
