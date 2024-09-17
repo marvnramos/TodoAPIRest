@@ -10,9 +10,14 @@ import java.time.Instant
 interface IAddRequest {
     val title: String
     val description: String?
+
     @Serializable(with = InstantSerializer::class)
     @SerialName("due_date")
     val dueDate: Instant?
-    val status: Status?
-    val priority: Priority?
+
+    @SerialName("status_id")
+    val statusId: Int?
+
+    @SerialName("priority_id")
+    val priorityId: Int?
 }
