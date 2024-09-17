@@ -8,10 +8,10 @@ import java.util.*
 
 data class CreateTaskCommand(
     val title: String,
-    val description: String,
+    val description: String? = null,
     val dueDate: Instant,
-    val status: Status,
-    val priority: Priority,
+    val statusId: Int,
+    val priorityId: Int,
     val createdBy: UUID,
 ) {
     fun toEntity(): Task {
@@ -19,8 +19,8 @@ data class CreateTaskCommand(
             title = title,
             description = description,
             dueDate = dueDate,
-            priority = priority,
-            status = status,
+            priorityId = priorityId,
+            statusId = statusId,
             createdBy = createdBy,
             createdAt = Instant.now(),
             updatedAt = Instant.now()
