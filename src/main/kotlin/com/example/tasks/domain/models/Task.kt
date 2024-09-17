@@ -23,6 +23,5 @@ data class Task(
     val createdAt: Instant?,
     @Serializable(with = InstantSerializer::class)
     val updatedAt: Instant?,
-    val sharedWith: List<@Serializable(with = UUIDSerializer::class) UUID> = emptyList()
 ) : Entity(id)
 

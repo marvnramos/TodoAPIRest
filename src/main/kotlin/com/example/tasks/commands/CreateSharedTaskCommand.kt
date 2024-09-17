@@ -1,29 +1,19 @@
 package com.example.tasks.commands
 
-import com.example.tasks.domain.models.Task
+import com.example.tasks.domain.models.UserTask
 import java.time.Instant
 import java.util.*
 
-data class CreateSharedTaskCommand (
-    val title: String,
-    val description: String? = null,
-    val dueDate: Instant,
-    val statusId: Int? = null,
-    val priorityId: Int? = null,
-    val createdBy: UUID,
-    val sharedWith: List<UUID>
+data class CreateSharedTaskCommand(
+    val userId: UUID,
+    val taskId: UUID,
 ) {
-    fun toEntity(): Task {
-        return Task(
-            title = title,
-            description = description,
-            dueDate = dueDate,
-            priorityId = priorityId,
-            statusId = statusId,
-            createdBy = createdBy,
-            createdAt = Instant.now(),
-            updatedAt = Instant.now(),
-            sharedWith = sharedWith
+    fun toEntity(): UserTask {
+        return UserTask(
+            userId = userId,
+            taskId = taskId,
+            assignedAt = Instant.now(),
+            archivedAt = null
         )
     }
 }
