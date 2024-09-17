@@ -53,6 +53,12 @@ class UserTaskRepository : IUserTaskRepository {
         UserTasks.deleteWhere { (userId eq id) and (taskId eq id) } > 0
     }
 
+    suspend fun archive(entity: UserTask): Boolean = dbQuery {
+        UserTasks.update({ (UserTasks.userId eq entity.userId) and (UserTasks.taskId eq entity.taskId) }) {
+            it[archivedAt] = Instant.now()
+        } > 0
+    }
+
     private fun resultRowToUserTask(row: ResultRow): UserTask = UserTask(
         userId = row[UserTasks.userId],
         taskId = row[UserTasks.taskId],
