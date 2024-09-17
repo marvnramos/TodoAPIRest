@@ -2,6 +2,7 @@ package com.example.tasks.routing
 
 import com.example.commons.dtos.ResDataDto
 import com.example.commons.validation.HttpValidationHelper
+import com.example.tasks.commands.CreateSharedTaskCommand
 import com.example.tasks.commands.CreateTaskCommand
 import com.example.tasks.commands.GetTasksCommand
 import com.example.tasks.dtos.requests.AddRequestDto
@@ -45,47 +46,56 @@ fun Application.configureTaskRoutes() {
                             request.toAddSharedWithDto()
                         } else null
 
+                        /**
+                         * tengo un command que dentro del servicio toma el modelo de la tarea
+                         * para crear el registro de esta como entidad de la base de datos
+                         *
+                         * debo tener un command distinto para crear un registro en la entidad
+                         * UserTask, este debería contener user_id de quién es la tarea y task_id
+                         * de la tarea que se está compartiendo o asignando
+                         */
 
-                        if (sharedRequest?.sharedWith != null) {
-                            val command = CreateTaskCommand(
+                        if (sharedRequest != null) {
+                            val sharedCommand = CreateSharedTaskCommand(
                                 title = sharedRequest.title,
                                 description = sharedRequest.description!!,
                                 dueDate = sharedRequest.dueDate!!,
-                                status = sharedRequest.status!!,
-                                priority = sharedRequest.priority!!,
-                                createdBy = userId
+                                statusId = sharedRequest.statusId!!,
+                                priorityId = sharedRequest.priorityId!!,
+                                createdBy = userId,
+                                sharedWith = sharedRequest.sharedWith
                             )
 
-                            val task = taskService.createTask(command)
-
-
-                            val response = TaskResponseDto(
-                                "success",
-                                "Task created successfully",
-                                ResDataDto.Single(task!!)
-                            )
-
-                            call.respond(HttpStatusCode.OK, response)
-                            return@post
+//                            val task = taskService.createTask(sharedCommand)
+//
+//
+//                            val response = TaskResponseDto(
+//                                "success",
+//                                "Task created successfully",
+//                                ResDataDto.Single(task!!)
+//                            )
+//
+//                            call.respond(HttpStatusCode.OK, response)
+//                            return@post
                         }
 
-                        val command = CreateTaskCommand(
-                            title = request.title,
-                            description = request.description!!,
-                            dueDate = request.dueDate!!,
-                            status = request.status!!,
-                            priority = request.priority!!,
-                            createdBy = userId
-                        )
-
-                        val task = taskService.createTask(command)
-                        val response = TaskResponseDto(
-                            "success",
-                            "Task created successfully",
-                            ResDataDto.Single(task!!)
-                        )
-
-                        call.respond(HttpStatusCode.OK, response)
+//                        val command = CreateTaskCommand(
+//                            title = request.title,
+//                            description = request.description!!,
+//                            dueDate = request.dueDate!!,
+//                            status = request.status!!,
+//                            priority = request.priority!!,
+//                            createdBy = userId
+//                        )
+//
+//                        val task = taskService.createTask(command)
+//                        val response = TaskResponseDto(
+//                            "success",
+//                            "Task created successfully",
+//                            ResDataDto.Single(task!!)
+//                        )
+//
+//                        call.respond(HttpStatusCode.OK, response)
                     } catch (e: IllegalArgumentException) {
                         HttpValidationHelper.responseError(call, e.message ?: "Invalid data")
                     } catch (e: BadRequestException) {
