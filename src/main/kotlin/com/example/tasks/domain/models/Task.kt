@@ -3,8 +3,6 @@ package com.example.tasks.domain.models
 import com.example.commons.models.Entity
 import com.example.commons.serializers.InstantSerializer
 import com.example.commons.serializers.UUIDSerializer
-import com.example.tasks.domain.Priority
-import com.example.tasks.domain.Status
 import kotlinx.serialization.Serializable
 import java.time.Instant
 import java.util.*
@@ -15,8 +13,8 @@ data class Task(
     override var id: UUID? = UUID.randomUUID(),
     val title: String,
     val description: String?,
-    val status: Status? = Status.TODO,
-    val priority: Priority? = Priority.LOW,
+    val statusId: Int?,
+    val priorityId: Int?,
     @Serializable(with = InstantSerializer::class)
     val dueDate: Instant?,
     @Serializable(with = UUIDSerializer::class)
@@ -25,5 +23,6 @@ data class Task(
     val createdAt: Instant?,
     @Serializable(with = InstantSerializer::class)
     val updatedAt: Instant?,
+    val sharedWith: List<@Serializable(with = UUIDSerializer::class) UUID> = emptyList()
 ) : Entity(id)
 
