@@ -54,8 +54,8 @@ class TaskRepository : ITaskRepository {
         id = row[Tasks.id],
         title = row[Tasks.title],
         description = row[Tasks.description],
-        priority = row[Tasks.priority],
-        status = row[Tasks.status],
+        priorityId = row[Tasks.priorityId],
+        statusId = row[Tasks.statusId],
         dueDate = row[Tasks.dueDate],
         createdBy = row[Tasks.createdBy],
         createdAt = row[Tasks.createdAt],
@@ -65,8 +65,8 @@ class TaskRepository : ITaskRepository {
     private fun setTaskValues(statement: UpdateBuilder<*>, entity: Task) {
         statement[Tasks.title] = entity.title
         statement[Tasks.description] = entity.description ?: return
-        statement[Tasks.status] = entity.status
-        statement[Tasks.priority] = entity.priority
+        statement[Tasks.statusId] = entity.statusId!!
+        statement[Tasks.priorityId] = entity.priorityId!!
         statement[Tasks.dueDate] = entity.dueDate
         statement[Tasks.createdBy] = entity.createdBy!!
         statement[Tasks.updatedAt] = entity.updatedAt ?: Instant.now()
