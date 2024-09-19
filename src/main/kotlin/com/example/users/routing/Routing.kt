@@ -38,7 +38,6 @@ fun Application.configureUsersRoutes(args: Array<String>) {
         route("/api/v1/users") {
 
 
-
             post("/store") {
                 try {
                     val request = call.receive<AddRequestDto>()
@@ -56,6 +55,7 @@ fun Application.configureUsersRoutes(args: Array<String>) {
                     )
 
                     val command = CreateUserCommand(
+                        id = user.id,
                         username = user.username,
                         email = user.email,
                         profilePhoto = user.profilePhoto,

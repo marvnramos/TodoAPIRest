@@ -1,27 +1,19 @@
 package com.example.tasks.domain.models
 
-import com.example.commons.models.Entity
 import com.example.commons.serializers.InstantSerializer
 import com.example.commons.serializers.UUIDSerializer
 import kotlinx.serialization.Serializable
 import java.time.Instant
-import java.util.*
+import java.util.UUID
 
 @Serializable
-data class Task(
+data class UserTask(
     @Serializable(with = UUIDSerializer::class)
-    override var id: UUID? = UUID.randomUUID(),
-    val title: String,
-    val description: String?,
-    val statusId: Int?,
-    val priorityId: Int?,
-    @Serializable(with = InstantSerializer::class)
-    val dueDate: Instant?,
+    val userId: UUID,
     @Serializable(with = UUIDSerializer::class)
-    val createdBy: UUID? = null,
+    val taskId: UUID,
     @Serializable(with = InstantSerializer::class)
-    val createdAt: Instant?,
+    val assignedAt: Instant?,
     @Serializable(with = InstantSerializer::class)
-    val updatedAt: Instant?,
-) : Entity(id)
-
+    val archivedAt: Instant?,
+)
