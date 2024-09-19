@@ -55,12 +55,9 @@ fun Application.configureTaskRoutes() {
                         )
 
                         val task = taskService.createTask(command) ?: throw Exception("Task not created")
-                        println("user id: $userId")
 
                         val createUserTaskCommand = CreateSharedTaskCommand(userId, task.id!!)
-
-                        println(createUserTaskCommand)
-                        userTaskService.createUserTask(createUserTaskCommand) // fix this
+                        userTaskService.createUserTask(createUserTaskCommand)
 
                         when {
                             request.sharedWith!!.isNotEmpty() -> {
