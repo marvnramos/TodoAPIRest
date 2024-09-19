@@ -13,7 +13,7 @@ data class AddRequestDto(
     override val title: String,
     override val description: String?,
     @Serializable(with = InstantSerializer::class)
-    @SerialName("due_date") override val dueDate: Instant?,
+    @SerialName("due_date") override val dueDate: Instant? = null,
     @SerialName("status_id") override val statusId: Int?,
     @SerialName("priority_id") override val priorityId: Int?,
     @SerialName("shared_with") val sharedWith: List<@Serializable(with = UUIDSerializer::class) UUID>? = emptyList()
