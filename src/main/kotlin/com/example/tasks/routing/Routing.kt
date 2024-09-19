@@ -6,12 +6,13 @@ import com.example.tasks.commands.CreateSharedTaskCommand
 import com.example.tasks.commands.CreateTaskCommand
 import com.example.tasks.commands.GetTasksCommand
 import com.example.tasks.dtos.requests.AddRequestDto
-import com.example.tasks.dtos.requests.AddSharedWithDto
 import com.example.tasks.dtos.responses.TaskResponseDto
 import com.example.tasks.middlewares.TaskMiddleware
 import com.example.tasks.middlewares.TaskMiddleware.Companion.taskValidator
 import com.example.tasks.repositories.implementation.TaskRepository
+import com.example.tasks.repositories.implementation.UserTaskRepository
 import com.example.tasks.services.implementations.TasksServiceImpl
+import com.example.tasks.services.implementations.UserTaskServiceImpl
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -26,6 +27,9 @@ fun Application.configureTaskRoutes() {
     val taskRepository = TaskRepository()
     val taskService = TasksServiceImpl(taskRepository)
     val taskMiddleware = TaskMiddleware()
+
+    val userTaskRepository = UserTaskRepository()
+    val userTaskService = UserTaskServiceImpl(userTaskRepository, taskService)
     routing {
         get("/hello") {
             call.respond(HttpStatusCode.OK, "hello")
@@ -41,94 +45,53 @@ fun Application.configureTaskRoutes() {
                         val request = call.receive<AddRequestDto>()
                         taskValidator(request, taskMiddleware)
 
+                        val command = CreateTaskCommand(
+                            title = request.title,
+                            description = request.description,
+                            dueDate = request.dueDate ?: return@post,
+                            statusId = request.statusId ?: 1,
+                            priorityId = request.priorityId ?: 1,
+                            createdBy = userId
+                        )
 
-                        val sharedRequest = if (request.sharedWith != null) {
-                            request.toAddSharedWithDto()
-                        } else null
+                        val task = taskService.createTask(command) ?: throw Exception("Task not created")
+                        println("user id: $userId")
 
-                        /**
-                         * tengo un command que dentro del servicio toma el modelo de la tarea
-                         * para crear el registro de esta como entidad de la base de datos
-                         *
-                         * debo tener un command distinto para crear un registro en la entidad
-                         * UserTask, este debería contener user_id de quién es la tarea y task_id
-                         * de la tarea que se está compartiendo o asignando
-                         */
+                        val createUserTaskCommand = CreateSharedTaskCommand(userId, task.id!!)
 
-                        if (sharedRequest != null) {
-                            val sharedCommand = CreateSharedTaskCommand(
-                                title = sharedRequest.title,
-                                description = sharedRequest.description!!,
-                                dueDate = sharedRequest.dueDate!!,
-                                statusId = sharedRequest.statusId!!,
-                                priorityId = sharedRequest.priorityId!!,
-                                createdBy = userId,
-                                sharedWith = sharedRequest.sharedWith
-                            )
+                        println(createUserTaskCommand)
+                        userTaskService.createUserTask(createUserTaskCommand) // fix this
 
-//                            val task = taskService.createTask(sharedCommand)
-//
-//
-//                            val response = TaskResponseDto(
-//                                "success",
-//                                "Task created successfully",
-//                                ResDataDto.Single(task!!)
-//                            )
-//
-//                            call.respond(HttpStatusCode.OK, response)
-//                            return@post
+                        when {
+                            request.sharedWith!!.isNotEmpty() -> {
+                                val sharedWith = request.sharedWith
+                                sharedWith.forEach {
+                                    userTaskService.createUserTask(CreateSharedTaskCommand(task.id!!, it))
+                                        ?: throw Exception("User tasks not created")
+                                }
+                            }
                         }
 
-//                        val command = CreateTaskCommand(
-//                            title = request.title,
-//                            description = request.description!!,
-//                            dueDate = request.dueDate!!,
-//                            status = request.status!!,
-//                            priority = request.priority!!,
-//                            createdBy = userId
-//                        )
-//
-//                        val task = taskService.createTask(command)
-//                        val response = TaskResponseDto(
-//                            "success",
-//                            "Task created successfully",
-//                            ResDataDto.Single(task!!)
-//                        )
-//
-//                        call.respond(HttpStatusCode.OK, response)
+                        call.respond(HttpStatusCode.OK, "ajdj")
                     } catch (e: IllegalArgumentException) {
                         HttpValidationHelper.responseError(call, e.message ?: "Invalid data")
                     } catch (e: BadRequestException) {
-                        when {
-                            call.receive<AddSharedWithDto>().toString().isNullOrEmpty() -> {
-                                HttpValidationHelper.responseError(call, "Invalid request payload")
-                            }
-
-                            else -> {
-                                call.respond(HttpStatusCode.OK, "uwu")
-                            }
-                        }
-//                        val request = call.receive<AddSharedWithDto>()
-//                        if(request.sharedWith == null) {
-//                            HttpValidationHelper.responseError(call, "Invalid request payload")
-//                        }
-//                        HttpValidationHelper.responseError(call, "Invalid request payload")
+                        HttpValidationHelper.responseError(call, "Invalid request payload")
                     } catch (e: CannotTransformContentToTypeException) {
                         HttpValidationHelper.responseError(call, "Request payload required!")
                     } catch (error: Exception) {
                         println(error)
-                        call.respond(HttpStatusCode.InternalServerError, "An error occurred :/")
+                        call.respond(HttpStatusCode.InternalServerError, error.message ?: "An error occurred :/")
                     }
                 }
+
                 get("/tasks") {
                     val command = GetTasksCommand()
 
                     val tasks = taskService.getTasks(command)
 
                     val response = TaskResponseDto(
-                        status = "success",
-                        message = "here are all task!",
-                        data = ResDataDto.Multiple(tasks)
+                        status = "success", message = "here are all task!", data = ResDataDto.Multiple(tasks)
                     )
                     call.respond(HttpStatusCode.OK, response)
                 }
