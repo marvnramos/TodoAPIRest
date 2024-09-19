@@ -10,7 +10,7 @@ abstract class UserTasksService(
     private val userTaskRepository: UserTaskRepository,
     private val tasksService: TasksServiceImpl
 ) : IUserTaskService {
-    override suspend fun createSharedTask(command: CreateSharedTaskCommand): UserTask? {
+    override suspend fun createUserTask(command: CreateSharedTaskCommand): UserTask? {
         val userTask = command.toEntity()
         userTaskRepository.insert(userTask)
         return userTask
