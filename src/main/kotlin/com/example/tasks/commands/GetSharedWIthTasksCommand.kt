@@ -1,4 +1,7 @@
 package com.example.tasks.commands
 
-class GetSharedWIthTasksCommand {
-}
+import java.util.*
+
+data class GetSharedWithTasksCommand(
+    val userId: UUID
+)
