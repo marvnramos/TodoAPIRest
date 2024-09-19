@@ -1,6 +1,5 @@
 package com.example.tasks.commands
 
-import com.example.tasks.domain.Status
 import com.example.tasks.domain.models.Task
 import java.time.Instant
 import java.util.*
@@ -10,14 +9,16 @@ data class UpdateTaskCommand(
     val title: String? = null,
     val description: String? = null,
     val dueDate: Instant? = null,
-    val status: Status,
+    val statusId: Int,
+    val priorityId: Int
 ) {
     fun updateEntity(task: Task): Task {
         return task.copy(
             title = this.title ?: task.title,
             description = this.description ?: task.description,
             dueDate = this.dueDate ?: task.dueDate,
-            status = this.status ?: task.status,
+            statusId = this.statusId ?: task.statusId,
+            priorityId = this.priorityId ?: task.priorityId,
             updatedAt = Instant.now()
         )
     }
