@@ -63,7 +63,7 @@ fun Application.configureTaskRoutes() {
                             request.sharedWith!!.isNotEmpty() -> {
                                 val sharedWith = request.sharedWith
                                 sharedWith.forEach {
-                                    userTaskService.createUserTask(CreateSharedTaskCommand(task.id!!, it))
+                                    userTaskService.createUserTask(CreateSharedTaskCommand(it, task.id!!))
                                         ?: throw Exception("User tasks not created")
                                 }
                             }
