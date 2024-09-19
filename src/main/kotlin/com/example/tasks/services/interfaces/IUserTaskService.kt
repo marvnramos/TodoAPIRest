@@ -7,7 +7,7 @@ import com.example.tasks.commands.GetSharedWithTasksCommand
 import com.example.tasks.domain.models.UserTask
 
 interface IUserTaskService {
-    suspend fun createSharedTask(command: CreateSharedTaskCommand): UserTask?
+    suspend fun createUserTask(command: CreateSharedTaskCommand): UserTask?
     suspend fun deleteSharedWith(command: DeleteSharedWithFromTasksCommand): Boolean
     suspend fun archiveTask(command: ArchiveTaskCommand): Boolean
     suspend fun getSharedTasks(command: GetSharedWithTasksCommand): List<UserTask>
