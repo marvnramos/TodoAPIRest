@@ -9,4 +9,5 @@ interface IUserTaskRepository {
     suspend fun delete(entity: UserTask): Boolean
     suspend fun archive(entity: UserTask): Boolean
     suspend fun getMySharedTasks(id: UUID): List<UserTask>
+    suspend fun getUserTasksByTaskId(id: UUID): List<UserTask>
 }
