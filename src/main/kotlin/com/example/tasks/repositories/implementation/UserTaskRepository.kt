@@ -11,7 +11,7 @@ import org.jetbrains.exposed.sql.statements.UpdateBuilder
 import java.time.Instant
 import java.util.*
 
-class UserTaskRepository: IUserTaskRepository {
+class UserTaskRepository : IUserTaskRepository {
     override suspend fun insert(entity: UserTask): UserTask? = dbQuery {
         UserTasks.insert {
             it[userId] = entity.userId
@@ -20,6 +20,11 @@ class UserTaskRepository: IUserTaskRepository {
             it[archivedAt] = null
         }
         entity
+    }
+
+    override suspend fun getUserTasksByTaskId(id: UUID): List<UserTask> = dbQuery {
+        UserTasks.select { UserTasks.taskId eq id }
+            .map(::resultRowToUserTask)
     }
 
     override suspend fun replace(entity: UserTask): Boolean = dbQuery {
