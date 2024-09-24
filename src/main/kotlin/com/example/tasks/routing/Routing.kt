@@ -72,7 +72,13 @@ fun Application.configureTaskRoutes() {
                             }
                         }
 
-                        call.respond(HttpStatusCode.OK, "ajdj")
+                        call.respond(
+                            HttpStatusCode.Created, TaskResponseDto(
+                                status = "success",
+                                message = "Task created successfully",
+                                data = ResDataDto.Single(task)
+                            )
+                        )
                     } catch (e: IllegalArgumentException) {
                         HttpValidationHelper.responseError(call, e.message ?: "Invalid data")
                     } catch (e: BadRequestException) {
