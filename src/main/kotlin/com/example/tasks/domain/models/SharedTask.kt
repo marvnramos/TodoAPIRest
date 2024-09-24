@@ -13,9 +13,13 @@ data class SharedTask(
     val description: String?,
     val statusId: Int?, // Here would go the auth user status
     val priorityId: Int?, // Everyone has the same priority and can be changed by the owner
-    @Serializable(with = InstantSerializer::class) val dueDate: Instant?,
-    @Serializable(with = UUIDSerializer::class) val createdBy: UUID,
+    @Serializable(with = InstantSerializer::class)
+    val dueDate: Instant?,
+    @Serializable(with = UUIDSerializer::class)
+    val createdBy: UUID,
     val sharedWith: List<@Serializable(with = UUIDSerializer::class) UUID>,
-    @Serializable(with = InstantSerializer::class) val createdAt: Instant,
-    @Serializable(with = InstantSerializer::class) val updatedAt: Instant,
+    @Serializable(with = InstantSerializer::class)
+    val createdAt: Instant,
+    @Serializable(with = InstantSerializer::class)
+    val updatedAt: Instant,
 )
