@@ -22,6 +22,11 @@ class UserTaskRepository : IUserTaskRepository {
         entity
     }
 
+    override suspend fun getAllRelatedTasks(id: UUID): List<UserTask> = dbQuery {
+        UserTasks.select { UserTasks.userId eq id }
+            .map(::resultRowToUserTask)
+    }
+
     override suspend fun getUserTasksByTaskId(id: UUID): List<UserTask> = dbQuery {
         UserTasks.select { UserTasks.taskId eq id }
             .map(::resultRowToUserTask)
@@ -43,6 +48,17 @@ class UserTaskRepository : IUserTaskRepository {
         UserTasks.update({ (UserTasks.userId eq entity.userId) and (UserTasks.taskId eq entity.taskId) }) {
             it[archivedAt] = Instant.now()
         } > 0
+    }
+
+    override suspend fun getWhoImSharingWith(id: UUID): List<UserTask> = dbQuery {
+        // select users which have shared tasks with me by task id
+        val userTasks = (UserTasks innerJoin Tasks)
+            .select {
+                UserTasks.userId eq id
+            }
+            .map(::resultRowToUserTask)
+
+        userTasks
     }
 
     override suspend fun getMySharedTasks(id: UUID): List<UserTask> = dbQuery {
