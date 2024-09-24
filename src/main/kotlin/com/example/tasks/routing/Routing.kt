@@ -173,7 +173,6 @@ fun Application.configureTaskRoutes() {
                         val sharedCommand = GetSharedWithTasksCommand(userId)
                         val tasksShared = userTaskService.getSharedTasks(sharedCommand)
 
-                        // Obtener detalles de las tareas compartidas
                         val sharedTaskIds = tasksShared.map { it.taskId }
 
                         val sharedTaskItems: List<TaskItem.SharedTask> = sharedTaskIds.mapNotNull { taskId ->
@@ -188,7 +187,7 @@ fun Application.configureTaskRoutes() {
                                         priorityId = task.priorityId,
                                         dueDate = task.dueDate,
                                         createdBy = task.createdBy!!,
-                                        sharedWith = sharedTaskIds,
+                                        sharedWith = sharedTaskIds, // fix this
                                         createdAt = task.createdAt!!,
                                         updatedAt = task.updatedAt!!
                                     )
@@ -196,10 +195,8 @@ fun Application.configureTaskRoutes() {
                             }
                         }
 
-                        // Combinar tareas personales y compartidas
                         val taskList: List<TaskItem> = personalTaskItems + sharedTaskItems
 
-                        // Responder con la lista de TaskItem
                         call.respond(HttpStatusCode.OK, taskList)
                     } catch (error: Exception) {
                         println(error)
