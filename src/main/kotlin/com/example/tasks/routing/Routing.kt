@@ -3,6 +3,8 @@ package com.example.tasks.routing
 import com.example.commons.dtos.ResDataDto
 import com.example.commons.validation.HttpValidationHelper
 import com.example.tasks.commands.*
+import com.example.tasks.domain.models.SharedTask
+import com.example.tasks.domain.models.TaskItem
 import com.example.tasks.dtos.requests.AddRequestDto
 import com.example.tasks.dtos.responses.TaskResponseDto
 import com.example.tasks.middlewares.TaskMiddleware
@@ -20,9 +22,9 @@ import io.ktor.server.plugins.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import java.util.*
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import java.util.*
 
 fun Application.configureTaskRoutes() {
     val taskRepository = TaskRepository()
@@ -155,23 +157,62 @@ fun Application.configureTaskRoutes() {
                 }
                 get("test") {
                     try {
-                        val command = GetByTaskIdCommand(UUID.fromString("07f017c9-5fc8-404b-87a1-c0e3b17f80cf"))
-                        val tasks = userTaskService.getSharedTasksByTaskId(command)
+                        val principal = call.principal<JWTPrincipal>()
+                        val payload = principal?.payload
+                        val userId = UUID.fromString(payload?.getClaim("sub")?.asString())
 
-                        call.respond(
-                            HttpStatusCode.OK, Json.encodeToString(tasks)
-                        )
+                        val command = GetTasksCommand(userId)
+                        val personalTasks = taskService.getTasks(command)
+
+                        val personalTaskItems = personalTasks.map { task ->
+                            TaskItem.PersonalTask(
+                                task = task
+                            )
+                        }
+
+                        val sharedCommand = GetSharedWithTasksCommand(userId)
+                        val tasksShared = userTaskService.getSharedTasks(sharedCommand)
+
+                        // Obtener detalles de las tareas compartidas
+                        val sharedTaskIds = tasksShared.map { it.taskId }
+
+                        val sharedTaskItems: List<TaskItem.SharedTask> = sharedTaskIds.mapNotNull { taskId ->
+                            val command = GetTaskByIdCommand(taskId)
+                            taskService.getTaskById(command)?.let { task ->
+                                TaskItem.SharedTask(
+                                    task = SharedTask(
+                                        id = task.id!!,
+                                        title = task.title,
+                                        description = task.description,
+                                        statusId = task.statusId,
+                                        priorityId = task.priorityId,
+                                        dueDate = task.dueDate,
+                                        createdBy = task.createdBy!!,
+                                        sharedWith = sharedTaskIds,
+                                        createdAt = task.createdAt!!,
+                                        updatedAt = task.updatedAt!!
+                                    )
+                                )
+                            }
+                        }
+
+                        // Combinar tareas personales y compartidas
+                        val taskList: List<TaskItem> = personalTaskItems + sharedTaskItems
+
+                        // Responder con la lista de TaskItem
+                        call.respond(HttpStatusCode.OK, taskList)
                     } catch (error: Exception) {
                         println(error)
                         call.respond(
                             HttpStatusCode.InternalServerError, TaskResponseDto(
                                 status = "error",
-                                message = "An error occurred",
+                                message = "An error occurred \n ${error.message}",
                                 data = ResDataDto.Multiple(emptyList())
                             )
                         )
                     }
                 }
+
             }
         }
     }
