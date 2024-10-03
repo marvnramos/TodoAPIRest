@@ -21,25 +21,29 @@ class DatabaseSingleton(private val args: Array<String>) {
     private val appConfig = env.config
 
     fun init() {
-        val driverClassName = "org.postgresql.Driver"
+        try {
+            val driverClassName = "org.postgresql.Driver"
 
-        val jdbcURL = appConfig.property("ktor.deployment.db.jdbcURL").getString()
-        val user = appConfig.property("ktor.deployment.db.user").getString()
-        val password = appConfig.property("ktor.deployment.db.password").getString()
+            val jdbcURL = appConfig.property("ktor.deployment.db.jdbcURL").getString()
+            val user = appConfig.property("ktor.deployment.db.user").getString()
+            val password = appConfig.property("ktor.deployment.db.password").getString()
 
-        val database = Database.connect(
-            url = jdbcURL,
-            driver = driverClassName,
-            user = user,
-            password = password
-        )
+            val database = Database.connect(
+                url = jdbcURL,
+                driver = driverClassName,
+                user = user,
+                password = password
+            )
 
-        transaction(database) {
-            SchemaUtils.create(Tasks, Users, Notifications, UserTasks, Relationships, TaskPriority, TaskStatus)
+            transaction(database) {
+                SchemaUtils.create(Tasks, Users, Notifications, UserTasks, Relationships, TaskPriority, TaskStatus)
+            }
+        } catch (e: Exception) {
+            println("SQL Error connection: ${e.message}")
         }
     }
 
-    companion object{
+    companion object {
         suspend fun <T> dbQuery(block: suspend () -> T): T = newSuspendedTransaction(Dispatchers.IO) {
             block()
         }
