@@ -36,8 +36,6 @@ fun Application.configureUsersRoutes(args: Array<String>) {
 
     routing {
         route("/api/v1/users") {
-
-
             post("/store") {
                 try {
                     val request = call.receive<AddRequestDto>()
@@ -64,7 +62,7 @@ fun Application.configureUsersRoutes(args: Array<String>) {
                     userService.createUser(command)
 
                     call.respond(
-                        HttpStatusCode.OK,
+                        HttpStatusCode.Created,
                         UserResponseDto("success", "User was created", ResDataDto.Single(user))
                     )
 
