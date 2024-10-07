@@ -10,6 +10,7 @@ interface IUserTaskService {
     suspend fun getSharedTasks(command: GetSharedWithTasksCommand): List<UserTask>
     suspend fun getSharedTasksByTaskId(command: GetByTaskIdCommand): List<UserTask>
     suspend fun getAllMyTasks(command: GetAllMyTasksCommand): List<UserTask>
+    suspend fun getWhoImSharingWith(command: GetWhoImSharingWIthCommand): List<UserTask>
 //    suspend fun getSharedTasks(): List<UserTask>
 //    suspend fun getSharedTasksById(): List<UserTask>
 //    suspend fun getSharedTaskById(): UserTask? // USE 2 IDS
