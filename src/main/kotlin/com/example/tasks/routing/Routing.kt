@@ -2,8 +2,7 @@ package com.example.tasks.routing
 
 import com.example.commons.dtos.ResDataDto
 import com.example.tasks.commands.*
-import com.example.tasks.domain.models.SharedTask
-import com.example.tasks.domain.models.TaskItem
+import com.example.tasks.domain.models.Task
 import com.example.tasks.dtos.responses.TaskResponseDto
 import com.example.tasks.middlewares.TaskMiddleware
 import com.example.tasks.repositories.implementation.TaskRepository
@@ -61,28 +60,6 @@ fun Application.configureTaskRoutes() {
                         taskMiddleware
                     )
                     sharedTasksHandler(command)
-//                    try {
-//                        val principal = call.principal<JWTPrincipal>()
-//                        val payload = principal?.payload
-//                        val userId = UUID.fromString(payload?.getClaim("sub")?.asString())
-//
-//                        val command = GetSharedWithTasksCommand(userId)
-//                        val tasks = userTaskService.getSharedTasks(command)
-//
-//                        call.respond(
-//                            HttpStatusCode.OK, Json.encodeToString(tasks)
-//                        )
-//
-//                    } catch (e: BadRequestException) {
-//                        HttpValidationHelper.responseError(call, "Invalid request payload")
-//                    } catch (error: Exception) {
-//                        println(error)
-//                        call.respond(
-//                            HttpStatusCode.InternalServerError, TaskResponseDto(
-//                                status = "error", message = "An error occurred", data = ResDataDto.Multiple(emptyList())
-//                            )
-//                        )
-//                    }
                 }
                 get("test") {
                     try {
@@ -94,8 +71,17 @@ fun Application.configureTaskRoutes() {
                         val personalTasks = taskService.getTasks(command)
 
                         val personalTaskItems = personalTasks.map { task ->
-                            TaskItem.PersonalTask(
-                                task = task
+                            Task(
+                                id = task.id!!,
+                                title = task.title,
+                                description = task.description,
+                                statusId = task.statusId,
+                                priorityId = task.priorityId,
+                                dueDate = task.dueDate,
+                                createdBy = task.createdBy!!,
+                                sharedWith = null,
+                                createdAt = task.createdAt!!,
+                                updatedAt = task.updatedAt!!
                             )
                         }
 
@@ -103,30 +89,38 @@ fun Application.configureTaskRoutes() {
                         val tasksShared = userTaskService.getSharedTasks(sharedCommand)
 
                         val sharedTaskIds = tasksShared.map { it.taskId }
+                        val whoImSharingWithCommand = GetWhoImSharingWIthCommand(userId, sharedTaskIds.first())
+                        val sharedWith = userTaskService.getWhoImSharingWith(whoImSharingWithCommand)
 
-                        val sharedTaskItems: List<TaskItem.SharedTask> = sharedTaskIds.mapNotNull { taskId ->
+                        val sharedTaskItems: List<Task> = sharedTaskIds.mapNotNull { taskId ->
                             val command = GetTaskByIdCommand(taskId)
                             taskService.getTaskById(command)?.let { task ->
-                                TaskItem.SharedTask(
-                                    task = SharedTask(
-                                        id = task.id!!,
-                                        title = task.title,
-                                        description = task.description,
-                                        statusId = task.statusId,
-                                        priorityId = task.priorityId,
-                                        dueDate = task.dueDate,
-                                        createdBy = task.createdBy!!,
-                                        sharedWith = sharedTaskIds, // fix this
-                                        createdAt = task.createdAt!!,
-                                        updatedAt = task.updatedAt!!
-                                    )
+                                Task(
+                                    id = task.id!!,
+                                    title = task.title,
+                                    description = task.description,
+                                    statusId = task.statusId,
+                                    priorityId = task.priorityId,
+                                    dueDate = task.dueDate,
+                                    createdBy = task.createdBy!!,
+                                    sharedWith = sharedWith.mapNotNull {
+                                        if (it.userId != userId) it.userId else null
+                                    },
+                                    createdAt = task.createdAt!!,
+                                    updatedAt = task.updatedAt!!
                                 )
                             }
                         }
 
-                        val taskList: List<TaskItem> = personalTaskItems + sharedTaskItems
+                        val taskList: List<Task> = personalTaskItems + sharedTaskItems
 
-                        call.respond(HttpStatusCode.OK, taskList)
+                        call.respond(
+                            HttpStatusCode.OK, TaskResponseDto(
+                                status = "success",
+                                message = "Here are all tasks",
+                                data = ResDataDto.Multiple(taskList)
+                            )
+                        )
                     } catch (error: Exception) {
                         println(error)
                         call.respond(
