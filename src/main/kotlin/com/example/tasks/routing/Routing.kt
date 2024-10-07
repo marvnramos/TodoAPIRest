@@ -50,34 +50,13 @@ fun Application.configureTaskRoutes() {
                 }
 
                 get("/personal") {
-                    try {
-                        val principal = call.principal<JWTPrincipal>()
-                        val payload = principal?.payload
-                        val userId = UUID.fromString(payload?.getClaim("sub")?.asString())
-
-                        val command = GetTasksCommand(userId)
-                        val tasks = taskService.getTasks(command)
-
-                        call.respond(
-                            HttpStatusCode.OK, TaskResponseDto(
-                                status = "success",
-                                message = "here are all personal tasks! :)",
-                                data = ResDataDto.Multiple(tasks)
-                            )
-                        )
-
-                    } catch (e: BadRequestException) {
-                        HttpValidationHelper.responseError(call, "Invalid request payload")
-                    } catch (error: Exception) {
-                        println(error)
-                        call.respond(
-                            HttpStatusCode.InternalServerError, TaskResponseDto(
-                                status = "error",
-                                message = "An error occurred",
-                                data = ResDataDto.Multiple(emptyList())
-                            )
-                        )
-                    }
+                    val command = HandleTaskCommand(
+                        call,
+                        taskService,
+                        userTaskService,
+                        taskMiddleware
+                    )
+                    personalTaskHandler(command)
                 }
                 get("/shared") {
                     try {
