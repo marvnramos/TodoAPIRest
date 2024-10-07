@@ -59,30 +59,35 @@ fun Application.configureTaskRoutes() {
                     personalTaskHandler(command)
                 }
                 get("/shared") {
-                    try {
-                        val principal = call.principal<JWTPrincipal>()
-                        val payload = principal?.payload
-                        val userId = UUID.fromString(payload?.getClaim("sub")?.asString())
-
-                        val command = GetSharedWithTasksCommand(userId)
-                        val tasks = userTaskService.getSharedTasks(command)
-
-                        call.respond(
-                            HttpStatusCode.OK, Json.encodeToString(tasks)
-                        )
-
-                    } catch (e: BadRequestException) {
-                        HttpValidationHelper.responseError(call, "Invalid request payload")
-                    } catch (error: Exception) {
-                        println(error)
-                        call.respond(
-                            HttpStatusCode.InternalServerError, TaskResponseDto(
-                                status = "error",
-                                message = "An error occurred",
-                                data = ResDataDto.Multiple(emptyList())
-                            )
-                        )
-                    }
+                    val command = HandleTaskCommand(
+                        call,
+                        taskService,
+                        userTaskService,
+                        taskMiddleware
+                    )
+                    sharedTasksHandler(command)
+//                    try {
+//                        val principal = call.principal<JWTPrincipal>()
+//                        val payload = principal?.payload
+//                        val userId = UUID.fromString(payload?.getClaim("sub")?.asString())
+//
+//                        val command = GetSharedWithTasksCommand(userId)
+//                        val tasks = userTaskService.getSharedTasks(command)
+//
+//                        call.respond(
+//                            HttpStatusCode.OK, Json.encodeToString(tasks)
+//                        )
+//
+//                    } catch (e: BadRequestException) {
+//                        HttpValidationHelper.responseError(call, "Invalid request payload")
+//                    } catch (error: Exception) {
+//                        println(error)
+//                        call.respond(
+//                            HttpStatusCode.InternalServerError, TaskResponseDto(
+//                                status = "error", message = "An error occurred", data = ResDataDto.Multiple(emptyList())
+//                            )
+//                        )
+//                    }
                 }
                 get("test") {
                     try {
