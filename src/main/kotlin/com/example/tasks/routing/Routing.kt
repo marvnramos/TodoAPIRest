@@ -40,69 +40,13 @@ fun Application.configureTaskRoutes() {
         authenticate("auth-jwt") {
             route("/api/v1/tasks") {
                 post("/store") {
-                    try {
-                        val principal = call.principal<JWTPrincipal>()
-                        val payload = principal?.payload
-                        val userId = UUID.fromString(payload?.getClaim("sub")?.asString())
-
-                        val request = call.receive<AddRequestDto>()
-                        taskValidator(request, taskMiddleware)
-
-                        val command = CreateTaskCommand(
-                            title = request.title,
-                            description = request.description,
-                            dueDate = request.dueDate,
-                            statusId = request.statusId ?: 1,
-                            priorityId = request.priorityId ?: 1,
-                            createdBy = userId
-                        )
-
-                        val task = taskService.createTask(command) ?: throw TaskException("Task not created")
-
-                        val createUserTaskCommand = CreateSharedTaskCommand(userId, task.id!!)
-                        userTaskService.createUserTask(createUserTaskCommand)
-
-                        when {
-                            request.sharedWith!!.isNotEmpty() -> {
-                                val sharedWith = request.sharedWith
-                                sharedWith.forEach {
-                                    userTaskService.createUserTask(CreateSharedTaskCommand(it, task.id!!))
-                                        ?: throw TaskException("User tasks not created")
-                                }
-                            }
-                        }
-
-                        call.respond(
-                            HttpStatusCode.Created, TaskResponseDto(
-                                status = "success",
-                                message = "Task created successfully",
-                                data = ResDataDto.Single(task)
-                            )
-                        )
-                    } catch (e: IllegalArgumentException) {
-                        HttpValidationHelper.responseError(call, e.message ?: "Invalid data")
-                    } catch (e: BadRequestException) {
-                        HttpValidationHelper.responseError(call, "Invalid request payload")
-                    } catch (e: CannotTransformContentToTypeException) {
-                        HttpValidationHelper.responseError(call, "Request payload required!")
-                    } catch (e: TaskException) {
-                        call.respond(
-                            HttpStatusCode.InternalServerError, TaskResponseDto(
-                                status = "error",
-                                message = e.message ?: "An error occurred",
-                                data = ResDataDto.Multiple(emptyList())
-                            )
-                        )
-                    } catch (error: Exception) {
-                        println(error)
-                        call.respond(
-                            HttpStatusCode.InternalServerError, TaskResponseDto(
-                                status = "error",
-                                message = "An error occurred",
-                                data = ResDataDto.Multiple(emptyList())
-                            )
-                        )
-                    }
+                    val command = HandleTaskCommand(
+                        call,
+                        taskService,
+                        userTaskService,
+                        taskMiddleware
+                    )
+                    storeTaskHandler(command)
                 }
 
                 get("/personal") {
