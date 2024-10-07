@@ -19,6 +19,7 @@ data class Task(
     val dueDate: Instant?,
     @Serializable(with = UUIDSerializer::class)
     val createdBy: UUID? = null,
+    val sharedWith: List<@Serializable(with = UUIDSerializer::class) UUID>? = null,
     @Serializable(with = InstantSerializer::class)
     val createdAt: Instant?,
     @Serializable(with = InstantSerializer::class)

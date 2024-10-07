@@ -1,24 +1,21 @@
 package com.example.tasks.routing
 
 import com.example.commons.dtos.ResDataDto
-import com.example.commons.validation.HttpValidationHelper
-import com.example.tasks.commands.CreateSharedTaskCommand
-import com.example.tasks.commands.CreateTaskCommand
-import com.example.tasks.commands.GetTasksCommand
-import com.example.tasks.dtos.requests.AddRequestDto
+import com.example.tasks.commands.*
+import com.example.tasks.domain.models.Task
 import com.example.tasks.dtos.responses.TaskResponseDto
 import com.example.tasks.middlewares.TaskMiddleware
-import com.example.tasks.middlewares.TaskMiddleware.Companion.taskValidator
 import com.example.tasks.repositories.implementation.TaskRepository
 import com.example.tasks.repositories.implementation.UserTaskRepository
+import com.example.tasks.routing.handlers.personalTaskHandler
+import com.example.tasks.routing.handlers.sharedTasksHandler
+import com.example.tasks.routing.handlers.storeTaskHandler
 import com.example.tasks.services.implementations.TasksServiceImpl
 import com.example.tasks.services.implementations.UserTaskServiceImpl
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
-import io.ktor.server.plugins.*
-import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import java.util.*
@@ -35,63 +32,107 @@ fun Application.configureTaskRoutes() {
             call.respond(HttpStatusCode.OK, "hello")
         }
         authenticate("auth-jwt") {
-            route("/api/v1") {
-                post("/tasks/store") {
+            route("/api/v1/tasks") {
+                post("/store") {
+                    val command = HandleTaskCommand(
+                        call,
+                        taskService,
+                        userTaskService,
+                        taskMiddleware
+                    )
+                    storeTaskHandler(command)
+                }
+
+                get("/personal") {
+                    val command = HandleTaskCommand(
+                        call,
+                        taskService,
+                        userTaskService,
+                        taskMiddleware
+                    )
+                    personalTaskHandler(command)
+                }
+                get("/shared") {
+                    val command = HandleTaskCommand(
+                        call,
+                        taskService,
+                        userTaskService,
+                        taskMiddleware
+                    )
+                    sharedTasksHandler(command)
+                }
+                get("test") {
                     try {
                         val principal = call.principal<JWTPrincipal>()
                         val payload = principal?.payload
                         val userId = UUID.fromString(payload?.getClaim("sub")?.asString())
 
-                        val request = call.receive<AddRequestDto>()
-                        taskValidator(request, taskMiddleware)
+                        val command = GetTasksCommand(userId)
+                        val personalTasks = taskService.getTasks(command)
 
-                        val command = CreateTaskCommand(
-                            title = request.title,
-                            description = request.description,
-                            dueDate = request.dueDate ?: return@post,
-                            statusId = request.statusId ?: 1,
-                            priorityId = request.priorityId ?: 1,
-                            createdBy = userId
-                        )
+                        val personalTaskItems = personalTasks.map { task ->
+                            Task(
+                                id = task.id!!,
+                                title = task.title,
+                                description = task.description,
+                                statusId = task.statusId,
+                                priorityId = task.priorityId,
+                                dueDate = task.dueDate,
+                                createdBy = task.createdBy!!,
+                                sharedWith = null,
+                                createdAt = task.createdAt!!,
+                                updatedAt = task.updatedAt!!
+                            )
+                        }
 
-                        val task = taskService.createTask(command) ?: throw Exception("Task not created")
+                        val sharedCommand = GetSharedWithTasksCommand(userId)
+                        val tasksShared = userTaskService.getSharedTasks(sharedCommand)
 
-                        val createUserTaskCommand = CreateSharedTaskCommand(userId, task.id!!)
-                        userTaskService.createUserTask(createUserTaskCommand)
+                        val sharedTaskIds = tasksShared.map { it.taskId }
+                        val whoImSharingWithCommand = GetWhoImSharingWIthCommand(userId, sharedTaskIds.first())
+                        val sharedWith = userTaskService.getWhoImSharingWith(whoImSharingWithCommand)
 
-                        when {
-                            request.sharedWith!!.isNotEmpty() -> {
-                                val sharedWith = request.sharedWith
-                                sharedWith.forEach {
-                                    userTaskService.createUserTask(CreateSharedTaskCommand(it, task.id!!))
-                                        ?: throw Exception("User tasks not created")
-                                }
+                        val sharedTaskItems: List<Task> = sharedTaskIds.mapNotNull { taskId ->
+                            val command = GetTaskByIdCommand(taskId)
+                            taskService.getTaskById(command)?.let { task ->
+                                Task(
+                                    id = task.id!!,
+                                    title = task.title,
+                                    description = task.description,
+                                    statusId = task.statusId,
+                                    priorityId = task.priorityId,
+                                    dueDate = task.dueDate,
+                                    createdBy = task.createdBy!!,
+                                    sharedWith = sharedWith.mapNotNull {
+                                        if (it.userId != userId) it.userId else null
+                                    },
+                                    createdAt = task.createdAt!!,
+                                    updatedAt = task.updatedAt!!
+                                )
                             }
                         }
 
-                        call.respond(HttpStatusCode.OK, "ajdj")
-                    } catch (e: IllegalArgumentException) {
-                        HttpValidationHelper.responseError(call, e.message ?: "Invalid data")
-                    } catch (e: BadRequestException) {
-                        HttpValidationHelper.responseError(call, "Invalid request payload")
-                    } catch (e: CannotTransformContentToTypeException) {
-                        HttpValidationHelper.responseError(call, "Request payload required!")
+                        val taskList: List<Task> = personalTaskItems + sharedTaskItems
+
+                        call.respond(
+                            HttpStatusCode.OK, TaskResponseDto(
+                                status = "success",
+                                message = "Here are all tasks",
+                                data = ResDataDto.Multiple(taskList)
+                            )
+                        )
                     } catch (error: Exception) {
                         println(error)
-                        call.respond(HttpStatusCode.InternalServerError, error.message ?: "An error occurred :/")
+                        call.respond(
+                            HttpStatusCode.InternalServerError, TaskResponseDto(
+                                status = "error",
+                                message = "An error occurred \n ${error.message}",
+                                data = ResDataDto.Multiple(emptyList())
+                            )
+                        )
                     }
                 }
 
-                get("/tasks") {
-                    val command = GetTasksCommand()
-
-                    val tasks = taskService.getTasks(command)
-
-                    val response = TaskResponseDto(
-                        status = "success", message = "here are all task!", data = ResDataDto.Multiple(tasks)
-                    )
-                    call.respond(HttpStatusCode.OK, response)
-                }
             }
         }
     }

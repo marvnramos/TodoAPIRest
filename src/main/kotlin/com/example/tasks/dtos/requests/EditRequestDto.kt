@@ -8,8 +8,8 @@ import java.time.Instant
 import java.util.*
 
 @Serializable
-data class AddRequestDto(
-    val title: String,
+data class EditRequestDto(
+    val title: String?,
     val description: String?,
     @Serializable(with = InstantSerializer::class)
     @SerialName("due_date") val dueDate: Instant? = null,

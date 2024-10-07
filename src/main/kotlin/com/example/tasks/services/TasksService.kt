@@ -7,7 +7,7 @@ import com.example.tasks.services.interfaces.ITasksService
 
 abstract class TasksService(private val taskRepository: TaskRepository) : ITasksService {
     override suspend fun getTasks(command: GetTasksCommand): List<Task> {
-        return taskRepository.getAll()
+        return taskRepository.getMyTasks(command.userId)
     }
 
     override suspend fun getTaskById(command: GetTaskByIdCommand): Task? {

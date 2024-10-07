@@ -29,9 +29,22 @@ abstract class UserTasksService(
         return false
     }
 
+    override suspend fun getAllMyTasks(command: GetAllMyTasksCommand): List<UserTask> {
+        return userTaskRepository.getAllRelatedTasks(command.userId)
+    }
+
+    override suspend fun getSharedTasksByTaskId(command: GetByTaskIdCommand): List<UserTask> {
+        val userTasks = userTaskRepository.getUserTasksByTaskId(command.taskId)
+        return userTasks
+    }
+
     override suspend fun archiveTask(command: ArchiveTaskCommand): Boolean {
         val userTask = command.toEntity()
         return userTaskRepository.archive(userTask)
+    }
+
+    override suspend fun getWhoImSharingWith(command: GetWhoImSharingWIthCommand): List<UserTask> {
+        return userTaskRepository.getWhoImSharingWith(command.userId, command.taskId)
     }
 
     override suspend fun getSharedTasks(command: GetSharedWithTasksCommand): List<UserTask> {

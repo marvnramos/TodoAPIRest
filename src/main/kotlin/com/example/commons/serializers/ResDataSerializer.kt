@@ -26,6 +26,18 @@ class ResDataSerializer<T : Any>(private val tSerializer: KSerializer<T>) :
                     } else {
                         entityContent
                     }
+                } else if (element.containsKey("entities")) {
+                    val entitiesContent = element["entities"] ?: JsonNull
+
+                    if (entitiesContent is JsonArray) {
+                        buildJsonArray {
+                            entitiesContent.forEach { item ->
+                                add(removeTypeAndEntityFields(item))
+                            }
+                        }
+                    } else {
+                        entitiesContent
+                    }
                 } else {
                     buildJsonObject {
                         element.forEach { (key, value) ->

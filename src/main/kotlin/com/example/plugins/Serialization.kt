@@ -13,10 +13,11 @@ import kotlinx.serialization.modules.subclass
 
 
 val modules = SerializersModule {
-    polymorphic(Any::class){
+    polymorphic(Any::class) {
         subclass(Task::class)
         subclass(User::class)
         subclass(JWT::class)
+
     }
 }
 

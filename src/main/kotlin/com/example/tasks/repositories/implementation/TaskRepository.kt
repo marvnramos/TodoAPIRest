@@ -3,6 +3,7 @@ package com.example.tasks.repositories.implementation
 import com.example.plugins.DatabaseSingleton.Companion.dbQuery
 import com.example.tasks.domain.models.Task
 import com.example.tasks.entities.Tasks
+import com.example.tasks.entities.UserTasks
 import com.example.tasks.repositories.interfaces.ITaskRepository
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
@@ -49,6 +50,19 @@ class TaskRepository : ITaskRepository {
         }
         entity
     }
+
+    override suspend fun getMyTasks(userId: UUID): List<Task> = dbQuery {
+        val myTasks = (Tasks innerJoin UserTasks)
+            .select { UserTasks.userId eq userId }
+            .map(::resultRowToTask)
+
+        myTasks.filter { task ->
+            UserTasks
+                .select { UserTasks.taskId eq task.id!! }
+                .count().toInt() == 1
+        }
+    }
+
 
     private fun resultRowToTask(row: ResultRow): Task = Task(
         id = row[Tasks.id],

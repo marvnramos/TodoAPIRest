@@ -1,7 +1,5 @@
 package com.example.tasks.commands
 
-import com.example.tasks.domain.Priority
-import com.example.tasks.domain.Status
 import com.example.tasks.domain.models.Task
 import java.time.Instant
 import java.util.*
@@ -9,7 +7,7 @@ import java.util.*
 data class CreateTaskCommand(
     val title: String,
     val description: String? = null,
-    val dueDate: Instant,
+    val dueDate: Instant? = null,
     val statusId: Int,
     val priorityId: Int,
     val createdBy: UUID,

@@ -1,7 +1,7 @@
 package com.example.tasks.commands
 
-import java.util.UUID
+import java.util.*
 
-data class GetTasksCommand(
+data class GetAllMyTasksCommand(
     val userId: UUID
 )
