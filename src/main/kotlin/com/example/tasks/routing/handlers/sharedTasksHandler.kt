@@ -14,6 +14,7 @@ import java.util.*
 suspend fun sharedTasksHandler(sharedHandlerCommand: HandleTaskCommand) {
     val (call, _, userTaskService, _) = sharedHandlerCommand
     exceptionHandler(call) {
+        // TODO: Get task data
         val principal = call.principal<JWTPrincipal>()
         val userId = UUID.fromString(principal?.payload?.getClaim("sub")?.asString())
 
