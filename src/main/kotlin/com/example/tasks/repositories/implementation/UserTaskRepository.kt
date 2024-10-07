@@ -50,11 +50,10 @@ class UserTaskRepository : IUserTaskRepository {
         } > 0
     }
 
-    override suspend fun getWhoImSharingWith(id: UUID): List<UserTask> = dbQuery {
-        // select users which have shared tasks with me by task id
+    override suspend fun getWhoImSharingWith(userId: UUID, taskId: UUID): List<UserTask> = dbQuery {
         val userTasks = (UserTasks innerJoin Tasks)
             .select {
-                UserTasks.userId eq id
+                (UserTasks.taskId eq taskId) and (UserTasks.userId neq userId)
             }
             .map(::resultRowToUserTask)
 
