@@ -43,6 +43,9 @@ abstract class UserTasksService(
         return userTaskRepository.archive(userTask)
     }
 
+    override suspend fun getWhoImSharingWith(command: GetWhoImSharingWIthCommand): List<UserTask> {
+        return userTaskRepository.getWhoImSharingWith(command.userId, command.taskId)
+    }
 
     override suspend fun getSharedTasks(command: GetSharedWithTasksCommand): List<UserTask> {
         val sharedTasks = userTaskRepository.getMySharedTasks(command.userId)
