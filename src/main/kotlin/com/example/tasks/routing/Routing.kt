@@ -1,29 +1,24 @@
 package com.example.tasks.routing
 
 import com.example.commons.dtos.ResDataDto
-import com.example.commons.validation.HttpValidationHelper
 import com.example.tasks.commands.*
 import com.example.tasks.domain.models.SharedTask
 import com.example.tasks.domain.models.TaskItem
-import com.example.tasks.dtos.requests.AddRequestDto
 import com.example.tasks.dtos.responses.TaskResponseDto
 import com.example.tasks.middlewares.TaskMiddleware
-import com.example.tasks.middlewares.TaskMiddleware.Companion.taskValidator
 import com.example.tasks.repositories.implementation.TaskRepository
 import com.example.tasks.repositories.implementation.UserTaskRepository
-import com.example.tasks.routing.exception.TaskException
+import com.example.tasks.routing.handlers.personalTaskHandler
+import com.example.tasks.routing.handlers.sharedTasksHandler
+import com.example.tasks.routing.handlers.storeTaskHandler
 import com.example.tasks.services.implementations.TasksServiceImpl
 import com.example.tasks.services.implementations.UserTaskServiceImpl
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
-import io.ktor.server.plugins.*
-import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import java.util.*
 
 fun Application.configureTaskRoutes() {
