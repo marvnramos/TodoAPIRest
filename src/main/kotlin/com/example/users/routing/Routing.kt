@@ -126,7 +126,13 @@ fun Application.configureUsersRoutes(args: Array<String>) {
                 }
             }
             patch("/{id}/forgot-password") {
-
+                // TODO: Forgot password
+            }
+            patch("/update-info/{id}") {
+                // TODO: Update user info
+            }
+            get("/{id}") {
+                // TODO: Get user by id
             }
         }
     }

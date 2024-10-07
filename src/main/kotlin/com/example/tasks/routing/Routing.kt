@@ -64,10 +64,12 @@ fun Application.configureTaskRoutes() {
                 get("test") {
                     try {
                         val principal = call.principal<JWTPrincipal>()
-                        val payload = principal?.payload
-                        val userId = UUID.fromString(payload?.getClaim("sub")?.asString())
+                        val userId = principal?.payload?.getClaim("sub")?.asString()?.let { UUID.fromString(it) }
 
-                        val command = GetTasksCommand(userId)
+                        if (userId == null) {
+                            call.respond(HttpStatusCode.BadRequest, "Invalid request payload")
+                        }
+                        val command = GetTasksCommand(userId!!)
                         val personalTasks = taskService.getTasks(command)
 
                         val personalTaskItems = personalTasks.map { task ->
@@ -132,7 +134,18 @@ fun Application.configureTaskRoutes() {
                         )
                     }
                 }
-
+                get("archived"){
+                    // TODO: Get all archived tasks
+                }
+                get("/{id}") {
+                    // TODO: Get task by id
+                }
+                patch("update/{id}") {
+                    // TODO: Update task
+                }
+                delete("archive/{id}") {
+                    // TODO: Archive task
+                }
             }
         }
     }
