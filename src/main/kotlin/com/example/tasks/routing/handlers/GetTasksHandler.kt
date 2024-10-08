@@ -4,13 +4,17 @@ import com.example.commons.dtos.ResDataDto
 import com.example.tasks.commands.*
 import com.example.tasks.domain.models.Task
 import com.example.tasks.dtos.responses.TaskResponseDto
-import com.example.tasks.routing.exception.exceptionHandler
+import com.example.tasks.routing.exception.TaskExceptionHandler
 import io.ktor.http.*
 import io.ktor.server.response.*
 
-suspend fun getTasksHandler(storeHandlerCommand: HandleTaskCommand) {
+suspend fun getTasksHandler(
+    storeHandlerCommand: HandleTaskCommand,
+    taskException: TaskExceptionHandler = TaskExceptionHandler()
+) {
     val (call, taskService, userTaskService, _) = storeHandlerCommand
-    exceptionHandler(call) {
+
+    taskException.exceptionHandler(call) {
         val userId = getAuthUserId(call)
 
         val personalTasks = taskService.getTasks(GetTasksCommand(userId))
@@ -32,9 +36,7 @@ suspend fun getTasksHandler(storeHandlerCommand: HandleTaskCommand) {
 
         call.respond(
             HttpStatusCode.OK, TaskResponseDto(
-                status = "success",
-                message = "Here are all tasks.",
-                data = ResDataDto.Multiple(taskList)
+                status = "success", message = "Here are all tasks.", data = ResDataDto.Multiple(taskList)
             )
         )
     }
