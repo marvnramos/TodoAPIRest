@@ -9,20 +9,16 @@ import com.example.tasks.dtos.responses.TaskResponseDto
 import com.example.tasks.middlewares.TaskMiddleware.Companion.taskValidator
 import com.example.tasks.routing.exception.TaskException
 import com.example.tasks.routing.exception.exceptionHandler
-import io.ktor.server.auth.jwt.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.http.*
-import io.ktor.server.auth.*
-import java.util.*
 
 suspend fun storeTaskHandler(
     storeHandlerCommand: HandleTaskCommand
 ) {
     val (call, taskService, userTaskService, taskMiddleware) = storeHandlerCommand
     exceptionHandler(call) {
-        val principal = call.principal<JWTPrincipal>()
-        val userId = UUID.fromString(principal?.payload?.getClaim("sub")?.asString())
+        val userId = getAuthUserId(call)
 
         val request = call.receive<AddRequestDto>()
         taskValidator(request, taskMiddleware)
