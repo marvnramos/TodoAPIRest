@@ -54,7 +54,15 @@ fun Application.configureTaskRoutes() {
                 get {
                     getTasksHandler(createHandleTaskCommand(call))
                 }
-
+                get("/filter"){
+                    /**
+                     * filter by status: /api/v1/tasks/filter?statusId=1
+                     * filter by priority: /api/v1/tasks/filter?priorityId=2
+                     * filter both: /api/v1/tasks/filter?statusId=1&priorityId=2
+                     * without filters (return exception error): /api/v1/tasks/filter
+                     */
+                    call.respond(HttpStatusCode.NotImplemented, "Filter tasks endpoint not implemented yet.")
+                }
                 get("/archived") {
                     // Placeholder for archived tasks route
                     call.respond(HttpStatusCode.NotImplemented, "Archived tasks endpoint not implemented yet.")
