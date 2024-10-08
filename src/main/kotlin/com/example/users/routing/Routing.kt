@@ -127,12 +127,16 @@ fun Application.configureUsersRoutes(args: Array<String>) {
             }
             patch("/{id}/forgot-password") {
                 // TODO: Forgot password
+                call.respond(HttpStatusCode.NotImplemented, "Forgot password endpoint not implemented yet.")
+
             }
             patch("/update-info/{id}") {
                 // TODO: Update user info
+                call.respond(HttpStatusCode.NotImplemented, "Update user endpoint not implemented yet.")
             }
             get("/{id}") {
                 // TODO: Get user by id
+                call.respond(HttpStatusCode.NotImplemented, "Get user info by ID endpoint not implemented yet.")
             }
         }
     }
