@@ -6,13 +6,16 @@ import com.example.tasks.commands.GetTaskByIdCommand
 import com.example.tasks.commands.GetWhoImSharingWIthCommand
 import com.example.tasks.commands.HandleTaskCommand
 import com.example.tasks.dtos.responses.TaskResponseDto
-import com.example.tasks.routing.exception.exceptionHandler
+import com.example.tasks.routing.exception.TaskExceptionHandler
 import io.ktor.http.*
 import io.ktor.server.response.*
 
-suspend fun sharedTasksHandler(sharedHandlerCommand: HandleTaskCommand) {
+suspend fun sharedTasksHandler(
+    sharedHandlerCommand: HandleTaskCommand,
+    taskException: TaskExceptionHandler = TaskExceptionHandler()
+) {
     val (call, taskService, userTaskService, _) = sharedHandlerCommand
-    exceptionHandler(call) {
+    taskException.exceptionHandler(call) {
         val userId = getAuthUserId(call)
 
         val sharedTasks = userTaskService.getSharedTasks(GetSharedWithTasksCommand(userId))
