@@ -8,16 +8,18 @@ import com.example.tasks.dtos.requests.AddRequestDto
 import com.example.tasks.dtos.responses.TaskResponseDto
 import com.example.tasks.middlewares.TaskMiddleware.Companion.taskValidator
 import com.example.tasks.routing.exception.TaskException
-import com.example.tasks.routing.exception.exceptionHandler
+import com.example.tasks.routing.exception.TaskExceptionHandler
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.http.*
 
 suspend fun storeTaskHandler(
-    storeHandlerCommand: HandleTaskCommand
+    storeHandlerCommand: HandleTaskCommand,
+    taskException: TaskExceptionHandler = TaskExceptionHandler()
+
 ) {
     val (call, taskService, userTaskService, taskMiddleware) = storeHandlerCommand
-    exceptionHandler(call) {
+    taskException.exceptionHandler(call) {
         val userId = getAuthUserId(call)
 
         val request = call.receive<AddRequestDto>()
