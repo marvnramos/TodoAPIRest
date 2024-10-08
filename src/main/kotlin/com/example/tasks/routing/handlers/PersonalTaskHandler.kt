@@ -4,20 +4,17 @@ import com.example.commons.dtos.ResDataDto
 import com.example.tasks.commands.GetTasksCommand
 import com.example.tasks.commands.HandleTaskCommand
 import com.example.tasks.dtos.responses.TaskResponseDto
-import com.example.tasks.routing.exception.exceptionHandler
+import com.example.tasks.routing.exception.TaskExceptionHandler
 import io.ktor.http.*
-import io.ktor.server.auth.*
-import io.ktor.server.auth.jwt.*
 import io.ktor.server.response.*
-import java.util.*
 
 suspend fun personalTaskHandler(
-    personalHandlerCommand: HandleTaskCommand
+    personalHandlerCommand: HandleTaskCommand,
+    taskException: TaskExceptionHandler = TaskExceptionHandler()
 ) {
     val (call, taskService, _, _) = personalHandlerCommand
-    exceptionHandler(call) {
-        val principal = call.principal<JWTPrincipal>()
-        val userId = UUID.fromString(principal?.payload?.getClaim("sub")?.asString())
+    taskException.exceptionHandler(call) {
+        val userId = getAuthUserId(call)
 
         val command = GetTasksCommand(userId)
         val tasks = taskService.getTasks(command)

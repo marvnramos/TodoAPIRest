@@ -43,4 +43,12 @@ dependencies {
     implementation("io.ktor:ktor-server-auth:$ktor_version")
     implementation("io.ktor:ktor-server-auth-jwt:$ktor_version")
     implementation("io.ktor:ktor-server-config-yaml")
+
+    implementation("io.github.microutils:kotlin-logging-jvm:3.0.5")
+    implementation("org.slf4j:slf4j-simple:2.0.9")
+
+    implementation("io.ktor:ktor-server-request-validation:2.3.2")
+    implementation("com.google.firebase:firebase-admin:9.1.1")
+
+
 }

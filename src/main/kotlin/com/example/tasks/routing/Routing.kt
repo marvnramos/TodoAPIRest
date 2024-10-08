@@ -2,23 +2,18 @@ package com.example.tasks.routing
 
 import com.example.commons.dtos.ResDataDto
 import com.example.tasks.commands.*
-import com.example.tasks.domain.models.Task
 import com.example.tasks.dtos.responses.TaskResponseDto
 import com.example.tasks.middlewares.TaskMiddleware
 import com.example.tasks.repositories.implementation.TaskRepository
 import com.example.tasks.repositories.implementation.UserTaskRepository
-import com.example.tasks.routing.handlers.personalTaskHandler
-import com.example.tasks.routing.handlers.sharedTasksHandler
-import com.example.tasks.routing.handlers.storeTaskHandler
+import com.example.tasks.routing.handlers.*
 import com.example.tasks.services.implementations.TasksServiceImpl
 import com.example.tasks.services.implementations.UserTaskServiceImpl
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
-import io.ktor.server.auth.jwt.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import java.util.*
 
 fun Application.configureTaskRoutes() {
     val taskRepository = TaskRepository()
@@ -27,124 +22,81 @@ fun Application.configureTaskRoutes() {
 
     val userTaskRepository = UserTaskRepository()
     val userTaskService = UserTaskServiceImpl(userTaskRepository, taskService)
+
     routing {
         get("/hello") {
             call.respond(HttpStatusCode.OK, "hello")
         }
+
         authenticate("auth-jwt") {
             route("/api/v1/tasks") {
-                post("/store") {
-                    val command = HandleTaskCommand(
-                        call,
-                        taskService,
-                        userTaskService,
-                        taskMiddleware
+                fun createHandleTaskCommand(call: ApplicationCall): HandleTaskCommand {
+                    return HandleTaskCommand(
+                        call = call,
+                        taskService = taskService,
+                        userTaskService = userTaskService,
+                        taskMiddleware = taskMiddleware
                     )
-                    storeTaskHandler(command)
+                }
+
+                post("/store") {
+                    storeTaskHandler(createHandleTaskCommand(call))
                 }
 
                 get("/personal") {
-                    val command = HandleTaskCommand(
-                        call,
-                        taskService,
-                        userTaskService,
-                        taskMiddleware
-                    )
-                    personalTaskHandler(command)
+                    personalTaskHandler(createHandleTaskCommand(call))
                 }
+
                 get("/shared") {
-                    val command = HandleTaskCommand(
-                        call,
-                        taskService,
-                        userTaskService,
-                        taskMiddleware
-                    )
-                    sharedTasksHandler(command)
+                    sharedTasksHandler(createHandleTaskCommand(call))
                 }
-                get("test") {
+
+                get {
+                    getTasksHandler(createHandleTaskCommand(call))
+                }
+                get("/filter"){
+                    /**
+                     * filter by status: /api/v1/tasks/filter?statusId=1
+                     * filter by priority: /api/v1/tasks/filter?priorityId=2
+                     * filter both: /api/v1/tasks/filter?statusId=1&priorityId=2
+                     * without filters (return exception error): /api/v1/tasks/filter
+                     */
+                    call.respond(HttpStatusCode.NotImplemented, "Filter tasks endpoint not implemented yet.")
+                }
+                get("/archived") {
+                    // Placeholder for archived tasks route
+                    call.respond(HttpStatusCode.NotImplemented, "Archived tasks endpoint not implemented yet.")
+                }
+
+                get("/{id}") {
+                    // Placeholder for fetching a task by id
+                    call.respond(HttpStatusCode.NotImplemented, "Get task by ID endpoint not implemented yet.")
+                }
+
+                patch("/update/{id}") {
+                    // Placeholder for task update logic
+                    call.respond(HttpStatusCode.NotImplemented, "Update task endpoint not implemented yet.")
+                }
+
+                delete("/archive/{id}") {
+                    // Placeholder for task archive logic
+                    call.respond(HttpStatusCode.NotImplemented, "Archive task endpoint not implemented yet.")
+                }
+
+                // Route for testing error handling
+                get("/test") {
                     try {
-                        val principal = call.principal<JWTPrincipal>()
-                        val userId = principal?.payload?.getClaim("sub")?.asString()?.let { UUID.fromString(it) }
-
-                        if (userId == null) {
-                            call.respond(HttpStatusCode.BadRequest, "Invalid request payload")
-                        }
-                        val command = GetTasksCommand(userId!!)
-                        val personalTasks = taskService.getTasks(command)
-
-                        val personalTaskItems = personalTasks.map { task ->
-                            Task(
-                                id = task.id!!,
-                                title = task.title,
-                                description = task.description,
-                                statusId = task.statusId,
-                                priorityId = task.priorityId,
-                                dueDate = task.dueDate,
-                                createdBy = task.createdBy!!,
-                                sharedWith = null,
-                                createdAt = task.createdAt!!,
-                                updatedAt = task.updatedAt!!
-                            )
-                        }
-
-                        val sharedCommand = GetSharedWithTasksCommand(userId)
-                        val tasksShared = userTaskService.getSharedTasks(sharedCommand)
-
-                        val sharedTaskIds = tasksShared.map { it.taskId }
-                        val whoImSharingWithCommand = GetWhoImSharingWIthCommand(userId, sharedTaskIds.first())
-                        val sharedWith = userTaskService.getWhoImSharingWith(whoImSharingWithCommand)
-
-                        val sharedTaskItems: List<Task> = sharedTaskIds.mapNotNull { taskId ->
-                            val command = GetTaskByIdCommand(taskId)
-                            taskService.getTaskById(command)?.let { task ->
-                                Task(
-                                    id = task.id!!,
-                                    title = task.title,
-                                    description = task.description,
-                                    statusId = task.statusId,
-                                    priorityId = task.priorityId,
-                                    dueDate = task.dueDate,
-                                    createdBy = task.createdBy!!,
-                                    sharedWith = sharedWith.mapNotNull {
-                                        if (it.userId != userId) it.userId else null
-                                    },
-                                    createdAt = task.createdAt!!,
-                                    updatedAt = task.updatedAt!!
-                                )
-                            }
-                        }
-
-                        val taskList: List<Task> = personalTaskItems + sharedTaskItems
-
-                        call.respond(
-                            HttpStatusCode.OK, TaskResponseDto(
-                                status = "success",
-                                message = "Here are all tasks",
-                                data = ResDataDto.Multiple(taskList)
-                            )
-                        )
+                        // logic that may throw an exception (- -)"
+                        call.respond(HttpStatusCode.OK, "Test route successful!")
                     } catch (error: Exception) {
-                        println(error)
                         call.respond(
                             HttpStatusCode.InternalServerError, TaskResponseDto(
                                 status = "error",
-                                message = "An error occurred \n ${error.message}",
+                                message = "An error occurred: ${error.message}",
                                 data = ResDataDto.Multiple(emptyList())
                             )
                         )
                     }
-                }
-                get("archived"){
-                    // TODO: Get all archived tasks
-                }
-                get("/{id}") {
-                    // TODO: Get task by id
-                }
-                patch("update/{id}") {
-                    // TODO: Update task
-                }
-                delete("archive/{id}") {
-                    // TODO: Archive task
                 }
             }
         }
