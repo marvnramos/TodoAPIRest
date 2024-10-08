@@ -31,7 +31,8 @@ suspend fun sharedTasksHandler(sharedHandlerCommand: HandleTaskCommand) {
         val sharedTaskList = sharedTaskIds.mapNotNull { taskId ->
             val task = taskService.getTaskById(GetTaskByIdCommand(taskId))
             task?.let {
-                val sharedWithUsers = userTaskService.getWhoImSharingWith(GetWhoImSharingWIthCommand(userId, taskId))
+                val command = GetWhoImSharingWIthCommand(userId, taskId)
+                val sharedWithUsers = userTaskService.getWhoImSharingWith(command)
                     .mapNotNull { sharingInfo -> if (sharingInfo.userId != userId) sharingInfo.userId else null }
 
                 mapTask(task, sharedWithUsers)
