@@ -6,18 +6,14 @@ import com.example.tasks.commands.HandleTaskCommand
 import com.example.tasks.dtos.responses.TaskResponseDto
 import com.example.tasks.routing.exception.exceptionHandler
 import io.ktor.http.*
-import io.ktor.server.auth.*
-import io.ktor.server.auth.jwt.*
 import io.ktor.server.response.*
-import java.util.*
 
 suspend fun personalTaskHandler(
     personalHandlerCommand: HandleTaskCommand
 ) {
     val (call, taskService, _, _) = personalHandlerCommand
     exceptionHandler(call) {
-        val principal = call.principal<JWTPrincipal>()
-        val userId = UUID.fromString(principal?.payload?.getClaim("sub")?.asString())
+        val userId = getAuthUserId(call)
 
         val command = GetTasksCommand(userId)
         val tasks = taskService.getTasks(command)
