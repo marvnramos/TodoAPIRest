@@ -14,7 +14,7 @@ suspend fun getTasksHandler(storeHandlerCommand: HandleTaskCommand) {
         val userId = getAuthUserId(call)
 
         val personalTasks = taskService.getTasks(GetTasksCommand(userId))
-        val personalTaskItems = personalTasks.map { mapTaskHandler(it, null) }
+        val personalTaskItems = personalTasks.map { toTaskHandler(it, null) }
 
         val sharedTasks = userTaskService.getSharedTasks(GetSharedWithTasksCommand(userId))
         val sharedTaskItems = sharedTasks.mapNotNull { sharedTask ->
@@ -24,7 +24,7 @@ suspend fun getTasksHandler(storeHandlerCommand: HandleTaskCommand) {
                     GetWhoImSharingWIthCommand(userId, sharedTask.taskId)
                 ).mapNotNull { if (it.userId != userId) it.userId else null }
 
-                mapTaskHandler(it, sharedWithUsers)
+                toTaskHandler(it, sharedWithUsers)
             }
         }
 
