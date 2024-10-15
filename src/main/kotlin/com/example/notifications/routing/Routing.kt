@@ -13,15 +13,19 @@ fun Application.configureNotificationsRouting() {
             }
             post {
                 // TODO: Implement post notification
+                call.respond(HttpStatusCode.NotImplemented, "Post notification endpoint not implemented yet.")
             }
             patch("/mark-as-read/{id}") {
                 // TODO: Implement mark as read
+                call.respond(HttpStatusCode.NotImplemented, "Mark as read endpoint not implemented yet.")
             }
             get {
                 // TODO: Implement get notifications
+                call.respond(HttpStatusCode.NotImplemented, "Get notifications endpoint not implemented yet.")
             }
             get("/reade-notifications") {
                 // TODO: Implement get read notifications
+                call.respond(HttpStatusCode.NotImplemented, "Get read notifications endpoint not implemented yet.")
             }
         }
     }
