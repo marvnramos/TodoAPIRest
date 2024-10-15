@@ -97,6 +97,10 @@ fun Application.configureUsersRoutes(args: Array<String>) {
                 // TODO: Get user by id
                 call.respond(HttpStatusCode.NotImplemented, "Get user info by ID endpoint not implemented yet.")
             }
+            get("/friends"){
+                // TODO: Get user friends
+                call.respond(HttpStatusCode.NotImplemented, "Get user friends endpoint not implemented yet.")
+            }
         }
     }
 }
