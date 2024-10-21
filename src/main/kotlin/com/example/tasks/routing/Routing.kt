@@ -51,7 +51,7 @@ fun Application.configureTaskRoutes() {
                     sharedTasksHandler(createHandleTaskCommand(call))
                 }
 
-                get {
+                get("/") {
                     getTasksHandler(createHandleTaskCommand(call))
                 }
                 get("/filter"){
