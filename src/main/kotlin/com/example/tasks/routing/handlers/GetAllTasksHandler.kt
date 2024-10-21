@@ -38,7 +38,7 @@ suspend fun getAllTasksHandler(
             call.respond(
                 HttpStatusCode.OK, TaskResponseDto(
                     status = "success",
-                    message = "Here are all tasks.",
+                    message = "Here are your tasks.",
                     data = ResDataDto.Multiple(it)
                 )
             )
@@ -46,7 +46,7 @@ suspend fun getAllTasksHandler(
             call.respond(
                 HttpStatusCode.OK, TaskResponseDto(
                     status = "success",
-                    message = "Here are all tasks.",
+                    message = "Here are your tasks.",
                     data = ResDataDto.Multiple(taskList)
                 )
             )
