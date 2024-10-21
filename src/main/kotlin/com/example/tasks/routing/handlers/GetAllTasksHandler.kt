@@ -24,33 +24,25 @@ suspend fun getAllTasksHandler(
         val sharedTasks = userTaskService.getSharedTasks(GetSharedWithTasksCommand(userId))
         val sharedTaskItems = sharedTasks.mapNotNull { sharedTask ->
             val task = taskService.getTaskById(GetTaskByIdCommand(sharedTask.taskId))
-            task?.let { it ->
+            task?.let {
                 val sharedWithUsers = userTaskService.getWhoImSharingWith(
                     GetWhoImSharingWIthCommand(userId, sharedTask.taskId)
-                ).mapNotNull { if (it.userId != userId) it.userId else null }
+                ).mapNotNull { it -> if (it.userId != userId) it.userId else null }
 
                 toTaskHandler(it, sharedWithUsers)
             }
         }
 
         val taskList: List<Task> = (personalTaskItems + sharedTaskItems).shuffled()
-        extend(taskList).filterNotNull().let {
-            call.respond(
-                HttpStatusCode.OK, TaskResponseDto(
-                    status = "success",
-                    message = "Here are your tasks.",
-                    data = ResDataDto.Multiple(it)
-                )
-            )
-        }.run {
-            call.respond(
-                HttpStatusCode.OK, TaskResponseDto(
-                    status = "success",
-                    message = "Here are your tasks.",
-                    data = ResDataDto.Multiple(taskList)
-                )
-            )
-        }
+        val extendedTasks = extend(taskList).filterNotNull()
 
+        call.respond(
+            HttpStatusCode.OK, TaskResponseDto(
+                status = "success",
+                message = "Here are your tasks.",
+                data = ResDataDto.Multiple(extendedTasks)
+            )
+        )
     }
 }
+
