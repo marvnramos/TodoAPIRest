@@ -64,8 +64,7 @@ fun Application.configureTaskRoutes() {
                     call.respond(HttpStatusCode.NotImplemented, "Filter tasks endpoint not implemented yet.")
                 }
                 get("/archived") {
-                    // Placeholder for archived tasks route
-                    call.respond(HttpStatusCode.NotImplemented, "Archived tasks endpoint not implemented yet.")
+                    getArchivedTasksHandler(createHandleTaskCommand(call))
                 }
 
                 get("/{id}") {
