@@ -32,7 +32,7 @@ suspend fun getTasksHandler(
             }
         }
 
-        val taskList: List<Task> = personalTaskItems + sharedTaskItems
+        val taskList: List<Task> = (personalTaskItems + sharedTaskItems).shuffled()
 
         call.respond(
             HttpStatusCode.OK, TaskResponseDto(
