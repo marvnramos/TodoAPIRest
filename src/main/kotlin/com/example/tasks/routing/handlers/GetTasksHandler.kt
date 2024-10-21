@@ -34,9 +34,20 @@ suspend fun getTasksHandler(
 
         val taskList: List<Task> = (personalTaskItems + sharedTaskItems).shuffled()
 
+        val cleanedList = taskList.filter { task ->
+            val command = task.id?.let { GetByTaskIdCommand(it) }
+            command != null && userTaskService
+                .getSharedTasksByTaskId(command)
+                .any { userTask ->
+                    userTask.archivedAt == null
+                }
+        }
+
         call.respond(
             HttpStatusCode.OK, TaskResponseDto(
-                status = "success", message = "Here are all tasks.", data = ResDataDto.Multiple(taskList)
+                status = "success",
+                message = "Here are all tasks.",
+                data = ResDataDto.Multiple(cleanedList)
             )
         )
     }
